@@ -18,3 +18,44 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+/* Custom Minimalist Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
+
+/* Dynamic Auras - Simplified & Static */
+.aura-halo {
+  color: #fbbf24;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+.aura-glitch {
+  color: #f43f5e;
+  text-shadow: 1.5px 0.5px 0px rgba(59, 130, 246, 0.6); /* Static Chromatic Aberration */
+}
+
+.aura-bot {
+  color: #a78bfa;
+  text-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
+}

@@ -1,6 +1,7 @@
-import React from 'react';
 import { Flame, Trophy, Settings, Clock } from 'lucide-react';
 import { UserIdentity, View } from '../types';
+import { BadgeList } from './BadgeList';
+import { AuraWrapper } from './AuraWrapper';
 
 interface LeftSidebarProps {
   identity: UserIdentity;
@@ -19,7 +20,7 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
   return (
     <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
       {/* Identity Card */}
-      <div className="bg-[#121212] rounded-2xl border border-zinc-800/50 p-5 relative overflow-hidden">
+      <div className="bg-[#121212] rounded-2xl border border-zinc-800/50 p-5 relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600/20 via-violet-500 to-violet-600/20" />
         
         <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 font-mono">
@@ -32,7 +33,9 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
           </div>
           <div>
             <div className="font-bold text-zinc-100 text-sm">
-              {identity.nickname}
+              <AuraWrapper honestyScore={identity.honestyScore}>
+                {identity.nickname}
+              </AuraWrapper>
             </div>
             <div className="text-xs text-zinc-500 font-mono mt-0.5 flex items-center gap-1">
               <Clock size={12} />
@@ -46,6 +49,13 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
             className="h-full bg-violet-500 transition-all duration-1000"
             style={{ width: `${progressPercent}%` }}
           />
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-zinc-800/50">
+          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 font-mono">
+            Conquistas de Legado
+          </div>
+          <BadgeList badgeIds={identity.badges} size="md" />
         </div>
       </div>
 

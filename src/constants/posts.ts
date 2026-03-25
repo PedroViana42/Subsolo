@@ -11,6 +11,7 @@ export const INITIAL_POSTS: Post[] = [
     ficCount: 45,
     userVote: null,
     tag: '#RU',
+    authorBadges: ['ru-sentinel', 'pioneer'],
     comments: [
       {
         id: 'c1',
@@ -41,6 +42,7 @@ export const INITIAL_POSTS: Post[] = [
     userVote: 'fact',
     tag: '#Eventos',
     isBot: true,
+    authorBadges: [],
     comments: [],
   },
   {
@@ -53,6 +55,7 @@ export const INITIAL_POSTS: Post[] = [
     ficCount: 12,
     userVote: null,
     tag: '#Fofoca',
+    authorBadges: ['truth-master'],
     comments: [],
   }
 ];

@@ -4,18 +4,31 @@ import { Feed } from './components/Feed';
 import { LeftSidebar } from './components/LeftSidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { Header } from './components/Header';
-import { FilterBar } from './components/FilterBar';
 import { ViewHeader } from './components/ViewHeader';
+import { FilterBar } from './components/FilterBar';
+import { LoginScreen } from './components/LoginScreen';
+import { MaskGenerationScreen } from './components/MaskGenerationScreen';
+import { ReportModal } from './components/ReportModal';
 import { Post, UserIdentity, Comment, Tag, View } from './types';
 import { INITIAL_POSTS } from './constants/posts';
 import { ALL_TAGS } from './constants/tags';
 import { generateIdentity } from './utils/identity';
 
+type AuthState = 'login' | 'mask' | 'app';
+
 export default function App() {
-  const [identity] = useState<UserIdentity>(() => generateIdentity());
+  const [authState, setAuthState] = useState<AuthState>('login');
+  const [identity, setIdentity] = useState<UserIdentity | null>(null);
   const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
   const [activeFilter, setActiveFilter] = useState<'#Tudo' | Tag>('#Tudo');
   const [currentView, setCurrentView] = useState<View>('feed');
+  const [reportingPostId, setReportingPostId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   // Force dark mode
   useEffect(() => {
@@ -23,6 +36,7 @@ export default function App() {
   }, []);
 
   const handlePost = async (content: string, tag: Tag) => {
+    if (!identity) return;
     await new Promise((resolve) => setTimeout(resolve, 800));
     
     const newPost: Post = {
@@ -31,6 +45,7 @@ export default function App() {
       createdAt: new Date(),
       authorNickname: identity.nickname,
       honestyScore: identity.honestyScore,
+      authorBadges: identity.badges,
       factCount: 0,
       ficCount: 0,
       userVote: null,
@@ -74,15 +89,15 @@ export default function App() {
       prev.map((post) => {
         if (post.id !== postId) return post;
         
-        const isOp = post.authorNickname === identity.nickname;
+        const isOp = identity && post.authorNickname === identity.nickname;
         
         const newComment: Comment = {
           id: Math.random().toString(36).substring(2, 9),
           content,
           createdAt: new Date(),
-          authorNickname: identity.nickname,
-          honestyScore: identity.honestyScore,
-          isOp,
+          authorNickname: identity?.nickname || 'Unknown',
+          honestyScore: identity?.honestyScore || '❓',
+          isOp: !!isOp,
         };
         
         return { ...post, comments: [...post.comments, newComment] };
@@ -91,7 +106,13 @@ export default function App() {
   };
 
   const handleReport = (postId: string) => {
-    alert('Postagem denunciada. A moderação irá analisar.');
+    setReportingPostId(postId);
+  };
+
+  const handleSubmitReport = (reason: string) => {
+    // Here you would normally send the postId and the reason to the backend Prisma
+    console.log(`Reporting post ${reportingPostId} for reason: ${reason}`);
+    showToast('Sua denúncia foi enviada para a moderação.', 'success');
   };
 
   const getFilteredPosts = () => {
@@ -99,7 +120,7 @@ export default function App() {
       return [...posts].sort((a, b) => (b.factCount + b.ficCount) - (a.factCount + a.ficCount)).slice(0, 10);
     }
     
-    if (currentView === 'my-posts') {
+    if (currentView === 'my-posts' && identity) {
       return posts.filter(p => p.authorNickname === identity.nickname);
     }
     
@@ -107,6 +128,23 @@ export default function App() {
   };
 
   const filteredPosts = getFilteredPosts();
+
+  if (authState === 'login') {
+    return <LoginScreen onLoginSuccess={() => setAuthState('mask')} />;
+  }
+
+  if (authState === 'mask') {
+    return (
+      <MaskGenerationScreen 
+        onAcceptMask={(newIdentity) => {
+          setIdentity(newIdentity);
+          setAuthState('app');
+        }} 
+      />
+    );
+  }
+
+  if (!identity) return null;
 
   return (
     <div className="min-h-screen bg-[#000000] text-zinc-100 font-sans selection:bg-violet-500/30">
@@ -141,6 +179,26 @@ export default function App() {
           <RightSidebar />
         </div>
       </div>
+
+      <ReportModal 
+        isOpen={reportingPostId !== null} 
+        onClose={() => setReportingPostId(null)} 
+        onSubmit={handleSubmitReport} 
+      />
+
+      {/* Global Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-[200] animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className="bg-[#1a1a1a] border border-zinc-800 rounded-xl p-4 shadow-2xl flex items-center gap-3">
+            <div className={`p-1.5 rounded-full ${toast.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                {toast.type === 'success' ? <polyline points="20 6 9 17 4 12" /> : <path d="M18 6L6 18M6 6l12 12" />}
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-zinc-200">{toast.message}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -17,6 +17,7 @@ Bem-vindo à documentação estratégica do **Subsolo**. Esta nota serve como po
 - [[Identidade Temporal]]: Ciclo de 48h e rotação de nicks.
 - [[Sistema Fato-Fic]]: Mecânica de veracidade e score de honestidade.
 - [[Anonimato Controlado]]: Proteção de identidade real via máscaras.
+- [[Conquistas de Legado]]: Sistema de reputação e marcos permanentes.
 
 ---
 

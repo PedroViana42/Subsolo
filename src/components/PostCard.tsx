@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Flag, MessageCircle, CheckCircle2, XCircle, Send, Bot } from 'lucide-react';
 import { Post, UserIdentity } from '../types';
+import { BadgeList } from './BadgeList';
+import { AuraWrapper } from './AuraWrapper';
 
 interface PostCardProps {
   key?: string;
@@ -54,21 +56,22 @@ export function PostCard({ post, identity, onVote, onComment, onReport }: PostCa
   };
 
   return (
-    <div className={`bg-[#121212] rounded-2xl shadow-sm border p-4 sm:p-6 mb-4 transition-colors relative overflow-hidden ${post.isBot ? 'border-violet-500/30 shadow-[0_0_15px_rgba(124,58,237,0.1)]' : 'border-zinc-800/50'}`}>
+    <div className={`bg-[#121212] rounded-2xl shadow-sm border p-4 sm:p-6 mb-4 transition-colors relative ${post.isBot ? 'border-violet-500/30 shadow-[0_0_15px_rgba(124,58,237,0.1)]' : 'border-zinc-800/50'}`}>
       {post.isBot && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600/50 via-violet-400 to-violet-600/50" />
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600/50 via-violet-400 to-violet-600/50 rounded-t-2xl" />
       )}
       <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <span className={`text-sm font-bold flex items-center gap-1.5 ${post.isBot ? 'text-violet-400 drop-shadow-[0_0_5px_rgba(124,58,237,0.5)]' : 'text-zinc-300'}`}>
+            <AuraWrapper honestyScore={post.honestyScore} isBot={post.isBot} className={`text-sm flex items-center gap-1.5 ${post.isBot ? 'text-violet-400 drop-shadow-[0_0_5px_rgba(124,58,237,0.5)]' : 'text-zinc-300'}`}>
               {post.isBot && <Bot size={14} />}
               {post.authorNickname} {post.honestyScore}
-            </span>
+            </AuraWrapper>
             <span className="px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-400 text-xs font-medium border border-zinc-700/50">
               {post.tag}
             </span>
           </div>
+          <BadgeList badgeIds={post.authorBadges} />
           <span className="text-xs text-zinc-500 font-medium mt-1">
             {formatTimeAgo(post.createdAt)}
           </span>
@@ -146,7 +149,7 @@ export function PostCard({ post, identity, onVote, onComment, onReport }: PostCa
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
               placeholder="Adicione um comentário..."
-              className="flex-1 bg-[#0a0a0a] border border-zinc-800 rounded-xl p-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-violet-500/50 resize-none font-mono"
+              className="flex-1 bg-[#0a0a0a] border border-zinc-800 rounded-xl p-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-violet-500/50 resize-none font-mono scrollbar-hide [field-sizing:content] max-h-32 overflow-y-auto"
               rows={1}
             />
             <button
@@ -162,10 +165,10 @@ export function PostCard({ post, identity, onVote, onComment, onReport }: PostCa
             {post.comments.map((comment) => (
               <div key={comment.id} className="flex flex-col gap-1 bg-zinc-900/30 p-3 rounded-lg border border-zinc-800/30">
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-bold flex items-center gap-1 ${comment.isBot ? 'text-violet-400' : 'text-zinc-300'}`}>
+                  <AuraWrapper honestyScore={comment.honestyScore} isBot={comment.isBot} className={`text-sm flex items-center gap-1.5 ${comment.isBot ? 'text-violet-400' : 'text-zinc-300'}`}>
                     {comment.isBot && <Bot size={12} />}
                     {comment.authorNickname} {comment.honestyScore}
-                  </span>
+                  </AuraWrapper>
                   {comment.isOp && (
                     <span className="px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-400 text-[10px] font-bold uppercase tracking-wider border border-violet-500/20">
                       OP
