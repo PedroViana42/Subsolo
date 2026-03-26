@@ -14,14 +14,14 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.endsWith('@instituicao.edu.br')) {
+    if (email.endsWith('@instituicao.edu.br')) {
       setError('Apenas e-mails institucionais são permitidos.');
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
-    
+
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
@@ -34,7 +34,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <div className="w-full max-w-md bg-[#121212] rounded-2xl border border-zinc-800/50 p-8 shadow-2xl relative overflow-hidden">
         {/* Glow effect */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-violet-600/20 blur-[50px] rounded-full pointer-events-none" />
-        
+
         <div className="flex flex-col items-center mb-8 relative z-10">
           <img src={logo} alt="Subsolo" className="h-16 mb-4" />
           <h1 className="text-2xl font-bold text-zinc-100">Bem-vindo ao Subsolo.</h1>
@@ -50,7 +50,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               <span>{error}</span>
             </div>
           )}
-          
+
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">E-mail Institucional</label>
             <div className="relative">
@@ -94,9 +94,9 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           </button>
         </form>
       </div>
-      
+
       <p className="text-xs text-zinc-600 mt-8 text-center max-w-sm">
-        O Subsolo é uma plataforma de anonimato controlado. 
+        O Subsolo é uma plataforma de anonimato controlado.
         Seus dados reais são protegidos e nunca expostos publicamente.
       </p>
     </div>

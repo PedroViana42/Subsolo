@@ -20,22 +20,29 @@ Utilizando o conceito de **Identidades Temporais**, o Subsolo garante que a priv
 
 ## 🛠️ Stack Tecnológica
 
-- **Frontend**: Vite + React + Tailwind CSS (Premium Dark Mode)
-- **Backend API**: Fastify (Node.js) + JWT Authentication
+- **Frontend**: Vite + React + Tailwind CSS (Localizado em `/frontend`)
+- **Backend API**: Express (Node.js) + Prisma ORM (Localizado em `/backend`)
 - **Banco de Dados**: PostgreSQL + Prisma ORM
 - **Infra**: Docker + Docker Compose
 
 ## 📦 Como Rodar Localmente
 
-1. **Instale as dependências**:
+1. **Instale as dependências** (na raiz do projeto):
    ```bash
    npm install
    ```
 2. **Configuração**:
-   Crie um arquivo `.env` baseado no `.env.example` e configure as credenciais do PostgreSQL e o Secret do JWT.
+   Crie um arquivo `.env` na pasta desejada (`frontend` ou `backend`) baseado nos exemplos (se disponíveis).
 3. **Inicie o Ambiente**:
+
+   **Para o Frontend:**
    ```bash
-   npm run dev
+   npm run dev:frontend
+   ```
+
+   **Para o Backend:**
+   ```bash
+   npm run dev:backend
    ```
 
 ---

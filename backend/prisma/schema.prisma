@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  nicks        Nick[]
+
+  @@map("users")
+}
+
+model Nick {
+  id        String    @id @default(uuid())
+  name      String
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id])
+  aura      String? // Honesty Score visual representation
+  score     Int       @default(100)
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  posts     Post[]
+  votes     Vote[]
+  comments  Comment[]
+
+  @@map("nicks")
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  content   String
+  tag       String?
+  nickId    String    @map("nick_id")
+  nick      Nick      @relation(fields: [nickId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  votes     Vote[]
+  comments  Comment[]
+
+  @@map("posts")
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  isReal    Boolean  @map("is_real") // True for "Real Oficial", False for "Pura Fic"
+  nickId    String   @map("nick_id")
+  nick      Nick     @relation(fields: [nickId], references: [id])
+  postId    String   @map("post_id")
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([nickId, postId])
+  @@map("votes")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  nickId    String   @map("nick_id")
+  nick      Nick     @relation(fields: [nickId], references: [id])
+  postId    String   @map("post_id")
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("comments")
+}

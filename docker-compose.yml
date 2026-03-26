@@ -1,0 +1,74 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: subsolo-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-subsolo}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - subsolo-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: subsolo-backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://user:password@db:5432/subsolo?schema=public}
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:-secret}
+    ports:
+      - "3001:3001"
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/node_modules
+    depends_on:
+      - db
+    networks:
+      - subsolo-network
+
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: subsolo-prisma-studio
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://user:password@db:5432/subsolo?schema=public}
+    command: npx prisma studio --port 5555 --browser none
+    ports:
+      - "5555:5555"
+    depends_on:
+      - db
+      - backend
+    networks:
+      - subsolo-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: subsolo-frontend
+    environment:
+      VITE_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    depends_on:
+      - backend
+    networks:
+      - subsolo-network
+
+networks:
+  subsolo-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
