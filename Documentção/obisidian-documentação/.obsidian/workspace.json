@@ -11,14 +11,10 @@
             "id": "9b7422cb85dd5b2f",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "02-tech/Autenticação JWT.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Autenticação JWT"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Visualização em gráfico"
             }
           }
         ]
@@ -185,8 +181,8 @@
   },
   "active": "9b7422cb85dd5b2f",
   "lastOpenFiles": [
-    "02-tech/Middleware de Proteção.md",
     "02-tech/Autenticação JWT.md",
+    "02-tech/Middleware de Proteção.md",
     "02-tech/Hashing de Senha.md",
     "03-data/Relacionamento de Identidade.md",
     "01-specs/Sistema Fato-Fic.md",

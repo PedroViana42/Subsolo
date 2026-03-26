@@ -1,14 +1,14 @@
 <div align="center">
   <img src="./src/assets/logo.png" alt="Subsolo Logo" width="400" />
-  <h3><i>Anonimato Conectado. Onde o campus se encontra nas sombras.</i></h3>
+  <h3><i>Anonimato Conectado.</i></h3>
 </div>
 
 ---
 
 ## 🕳️ O que é o Subsolo?
-O **Subsolo** é uma rede social universitária anônima projetada para integrar a comunidade acadêmica através de confissões, fofocas e utilidade pública, sem o peso da identidade real.
+O **Subsolo** é uma rede social anônima projetada para integrar a comunidade através de confissões, fofocas e utilidade pública, sem o peso da identidade real.
 
-Utilizando o conceito de **Identidades Temporais**, o Subsolo garante que a privacidade venha em primeiro lugar, permitindo que a voz do campus seja ouvida sem julgamentos persistentes.
+Utilizando o conceito de **Identidades Temporais**, o Subsolo garante que a privacidade venha em primeiro lugar, permitindo que a voz da comunidade seja ouvida sem julgamentos persistentes.
 
 ## 🚀 Principais Funcionalidades
 
@@ -46,5 +46,3 @@ Utilizando o conceito de **Identidades Temporais**, o Subsolo garante que a priv
    ```
 
 ---
-
-*Desenvolvido com foco em segurança, escalabilidade e na melhor experiência universitária.*
