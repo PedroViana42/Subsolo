@@ -25,25 +25,58 @@ Utilizando o conceito de **Identidades Temporais**, o Subsolo garante que a priv
 - **Banco de Dados**: PostgreSQL + Prisma ORM
 - **Infra**: Docker + Docker Compose
 
-## 📦 Como Rodar Localmente
+## 📦 Como Rodar com Docker
 
-1. **Instale as dependências** (na raiz do projeto):
-   ```bash
-   npm install
-   ```
-2. **Configuração**:
-   Crie um arquivo `.env` na pasta desejada (`frontend` ou `backend`) baseado nos exemplos (se disponíveis).
-3. **Inicie o Ambiente**:
+### Pré-requisitos
+- Docker e Docker Compose instalados
 
-   **Para o Frontend:**
-   ```bash
-   npm run dev:frontend
+### Passos para Execução
+
+1. **Configuração de Variáveis de Ambiente** (opcional):
+   Crie um arquivo `.env` na raiz do projeto com as variáveis necessárias:
+   ```env
+   POSTGRES_USER=user
+   POSTGRES_PASSWORD=password
+   POSTGRES_DB=subsolo
+   DATABASE_URL=postgresql://user:password@db:5432/subsolo?schema=public
+   JWT_SECRET=seu_secret_aqui
    ```
 
-   **Para o Backend:**
+2. **Inicie todos os serviços**:
    ```bash
-   npm run dev:backend
+   docker-compose up
    ```
+
+3. **Acesso aos serviços**:
+   - **Frontend**: http://localhost:3000
+   - **Backend API**: http://localhost:3001
+   - **Prisma Studio**: http://localhost:5555
+   - **Banco de Dados**: postgresql://user:password@localhost:5434/subsolo
+
+### Seviços Inclusos
+- **Frontend**: React + Vite (Auto-reload habilitado)
+- **Backend API**: Express + Prisma ORM (Auto-reload habilitado)
+- **PostgreSQL**: Banco de dados relacional
+- **Prisma Studio**: IDE visual para o banco de dados
+
+### Comandos Úteis
+
+```bash
+# Reconstruir imagens
+docker-compose build
+
+# Parar os serviços
+docker-compose down
+
+# Ver logs em tempo real
+docker-compose logs -f
+
+# Executar migrations do Prisma
+docker-compose exec backend npx prisma migrate deploy
+
+# Acessar o PostgreSQL diretamente
+docker-compose exec db psql -U user -d subsolo
+```
 
 ---
 

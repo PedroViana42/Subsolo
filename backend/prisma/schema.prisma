@@ -73,3 +73,12 @@ model Comment {
 
   @@map("comments")
 }
+
+model NickCatalogue {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  category  String?  // Ex: "Animais", "Espaço", "Comida"
+  isActive  Boolean  @default(true)
+  
+  @@map("nick_catalogue")
+}
