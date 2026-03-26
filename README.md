@@ -22,18 +22,42 @@ Utilizando o conceito de **Identidades Temporais**, o Subsolo garante que a priv
 
 - **Frontend**: Vite + React + Tailwind CSS (Localizado em `/frontend`)
 - **Backend API**: Express (Node.js) + Prisma ORM (Localizado em `/backend`)
-- **Banco de Dados**: PostgreSQL + Prisma ORM
+- **Banco de Dados**: PostgreSQL
 - **Infra**: Docker + Docker Compose
 
 ## 📦 Como Rodar Localmente
+
+### 🐳 Via Docker (Recomendado)
+
+A maneira mais fácil e rápida de rodar o ambiente completo (Front, Back e DB):
+
+1. **Certifique-se de ter o Docker instalado.**
+2. **Inicie os containers:**
+   ```bash
+   docker compose up -d
+   ```
+3. **Acesse as aplicações:**
+   - **Frontend:** [localhost:3000](http://localhost:3000)
+   - **Backend API:** [localhost:3001](http://localhost:3001)
+   - **Prisma Studio (Banco de Dados):** [localhost:5555](http://localhost:5555)
+
+---
+
+### 💻 Manualmente (Desenvolvimento)
+
+Se preferir rodar os serviços individualmente fora do container:
 
 1. **Instale as dependências** (na raiz do projeto):
    ```bash
    npm install
    ```
 2. **Configuração**:
-   Crie um arquivo `.env` na pasta desejada (`frontend` ou `backend`) baseado nos exemplos (se disponíveis).
-3. **Inicie o Ambiente**:
+   Crie os arquivos `.env` nas pastas `/frontend` e `/backend` baseando-se nos exemplos.
+3. **Suba o Banco de Dados** (pode usar o Docker apenas para o DB):
+   ```bash
+   docker compose up -d db
+   ```
+4. **Inicie o Ambiente**:
 
    **Para o Frontend:**
    ```bash
