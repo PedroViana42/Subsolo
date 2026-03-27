@@ -16,6 +16,7 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
   nicks        Nick[]
+  badges       UserBadge[]
 
   @@map("users")
 }
@@ -34,6 +35,7 @@ model Nick {
   posts       Post[]
   votes       Vote[]
   comments    Comment[]
+  reportsMade Report[]
 
   @@index([expiresAt])
   @@index([userId, expiresAt])
@@ -47,8 +49,11 @@ model Post {
   nickId    String    @map("nick_id")
   nick      Nick      @relation(fields: [nickId], references: [id])
   createdAt DateTime  @default(now()) @map("created_at")
+  factCount Int       @default(0) @map("fact_count")
+  ficCount  Int       @default(0) @map("fic_count")
   votes     Vote[]
   comments  Comment[]
+  reports   Report[]
 
   @@index([createdAt])
   @@map("posts")
@@ -89,4 +94,39 @@ model NickCatalogue {
 
   @@index([isActive])
   @@map("nick_catalogue")
+}
+
+model Badge {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String
+  icon        String      // Emoji ou nome do ícone Lucide
+  users       UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  badgeId   String   @map("badge_id")
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Report {
+  id             String   @id @default(uuid())
+  reason         String
+  status         String   @default("pending") // pending, resolved, rejected
+  postId         String   @map("post_id")
+  post           Post     @relation(fields: [postId], references: [id])
+  reporterNickId String   @map("reporter_nick_id")
+  reporterNick   Nick     @relation(fields: [reporterNickId], references: [id])
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("reports")
 }
