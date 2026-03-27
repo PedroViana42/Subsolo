@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="./frontend/src/assets/logo.png" alt="Subsolo Logo" width="400" />
-  <h3><i>Anonimato Conectado. Onde o campus se encontra nas sombras.</i></h3>
+  <img src="./src/assets/logo.png" alt="Subsolo Logo" width="400" />
+  <h3><i>Anonimato Conectado.</i></h3>
 </div>
 
 ---
