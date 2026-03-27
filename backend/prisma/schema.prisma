@@ -21,18 +21,22 @@ model User {
 }
 
 model Nick {
-  id        String    @id @default(uuid())
-  name      String
-  userId    String    @map("user_id")
-  user      User      @relation(fields: [userId], references: [id])
-  aura      String? // Honesty Score visual representation
-  score     Int       @default(100)
-  expiresAt DateTime  @map("expires_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  posts     Post[]
-  votes     Vote[]
-  comments  Comment[]
+  id          String         @id @default(uuid())
+  name        String
+  userId      String         @map("user_id")
+  user        User           @relation(fields: [userId], references: [id])
+  catalogueId String?        @map("catalogue_id")
+  catalogue   NickCatalogue? @relation(fields: [catalogueId], references: [id])
+  aura        String?
+  score       Int            @default(100)
+  expiresAt   DateTime       @map("expires_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  posts       Post[]
+  votes       Vote[]
+  comments    Comment[]
 
+  @@index([expiresAt])
+  @@index([userId, expiresAt])
   @@map("nicks")
 }
 
@@ -46,12 +50,13 @@ model Post {
   votes     Vote[]
   comments  Comment[]
 
+  @@index([createdAt])
   @@map("posts")
 }
 
 model Vote {
   id        String   @id @default(uuid())
-  isReal    Boolean  @map("is_real") // True for "Real Oficial", False for "Pura Fic"
+  isReal    Boolean  @map("is_real")
   nickId    String   @map("nick_id")
   nick      Nick     @relation(fields: [nickId], references: [id])
   postId    String   @map("post_id")
@@ -71,14 +76,17 @@ model Comment {
   post      Post     @relation(fields: [postId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@index([postId])
   @@map("comments")
 }
 
 model NickCatalogue {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  category  String?  // Ex: "Animais", "Espaço", "Comida"
-  isActive  Boolean  @default(true)
-  
+  id       String  @id @default(uuid())
+  name     String  @unique
+  category String?
+  isActive Boolean @default(true)
+  nicks    Nick[]
+
+  @@index([isActive])
   @@map("nick_catalogue")
 }

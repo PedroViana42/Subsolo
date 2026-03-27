@@ -1,83 +1,112 @@
 <div align="center">
-  <img src="./src/assets/logo.png" alt="Subsolo Logo" width="400" />
+  <img src="./frontend/src/assets/logo.png" alt="Subsolo Logo" width="400" />
   <h3><i>Anonimato Conectado. Onde o campus se encontra nas sombras.</i></h3>
 </div>
 
 ---
 
-## 🕳️ O que é o Subsolo?
-O **Subsolo** é uma rede social universitária anônima projetada para integrar a comunidade acadêmica através de confissões, fofocas e utilidade pública, sem o peso da identidade real.
+## O que é o Subsolo?
 
-Utilizando o conceito de **Identidades Temporais**, o Subsolo garante que a privacidade venha em primeiro lugar, permitindo que a voz do campus seja ouvida sem julgamentos persistentes.
+O **Subsolo** é uma rede social universitária anônima para confissões, fofocas e utilidade pública dentro do campus. O diferencial é o sistema de **Identidades Temporais** — cada usuário recebe um apelido único que expira em 48h, impedindo rastreamento histórico de longo prazo.
 
-## 🚀 Principais Funcionalidades
+## Funcionalidades
 
-- **🎭 Identidade Temporal (48h)** (Em Desenvolvimento 🚧): Sua máscara no Subsolo (Nick) expira e se renova a cada 48 horas, evitando rastreamento histórico de longo prazo.
-- **✅ Sistema Fato/Fic** (Em Desenvolvimento 🚧): A comunidade valida a veracidade das postagens. "Real Oficial" vs "Pura Fic" decidem sua reputação na rede.
-- **😇 Honesty Score** (Em Desenvolvimento 🚧): Uma aura visual que acompanha seu Nick, baseada no seu histórico de veracidade nas últimas sessões.
-- **🍱 O Fiscal do RU** (Em Desenvolvimento 🚧): Menu diário do Restaurante Universitário com votação em tempo real sobre a qualidade da comida.
-- **📅 Agenda do Campus** (Em Desenvolvimento 🚧): Widgets dinâmicos com os próximos eventos, festas e avisos acadêmicos.
+| Feature | Status |
+|---|---|
+| 🎭 Identidade Temporal (Nick 48h) | ✅ Implementado |
+| 🔐 Cadastro e Login com JWT | ✅ Implementado |
+| ✅ Sistema Fato/Fic | 🚧 Em Desenvolvimento |
+| 😇 Honesty Score | 🚧 Em Desenvolvimento |
+| 🍱 Fiscal do RU | 🚧 Em Desenvolvimento |
+| 📅 Agenda do Campus | 🚧 Em Desenvolvimento |
 
-## 🛠️ Stack Tecnológica
+## Stack
 
-- **Frontend**: Vite + React + Tailwind CSS (Localizado em `/frontend`)
-- **Backend API**: Express (Node.js) + Prisma ORM (Localizado em `/backend`)
-- **Banco de Dados**: PostgreSQL + Prisma ORM
+- **Frontend**: React 19 + Vite 6 + Tailwind CSS 4
+- **Backend**: Express 4 + Node.js 22 + TypeScript
+- **Banco**: PostgreSQL 17 + Prisma 7 ORM
+- **Auth**: JWT (stateless, 48h) + bcryptjs
 - **Infra**: Docker + Docker Compose
 
-## 📦 Como Rodar com Docker
+## Rodando com Docker
 
 ### Pré-requisitos
 - Docker e Docker Compose instalados
 
-### Passos para Execução
+### 1. Configure as variáveis de ambiente
 
-1. **Configuração de Variáveis de Ambiente** (opcional):
-   Crie um arquivo `.env` na raiz do projeto com as variáveis necessárias:
-   ```env
-   POSTGRES_USER=user
-   POSTGRES_PASSWORD=password
-   POSTGRES_DB=subsolo
-   DATABASE_URL=postgresql://user:password@db:5432/subsolo?schema=public
-   JWT_SECRET=seu_secret_aqui
-   ```
-
-2. **Inicie todos os serviços**:
-   ```bash
-   docker-compose up
-   ```
-
-3. **Acesso aos serviços**:
-   - **Frontend**: http://localhost:3000
-   - **Backend API**: http://localhost:3001
-   - **Prisma Studio**: http://localhost:5555
-   - **Banco de Dados**: postgresql://user:password@localhost:5434/subsolo
-
-### Seviços Inclusos
-- **Frontend**: React + Vite (Auto-reload habilitado)
-- **Backend API**: Express + Prisma ORM (Auto-reload habilitado)
-- **PostgreSQL**: Banco de dados relacional
-- **Prisma Studio**: IDE visual para o banco de dados
-
-### Comandos Úteis
+Copie o `.env.example` e preencha com seus valores:
 
 ```bash
-# Reconstruir imagens
-docker-compose build
-
-# Parar os serviços
-docker-compose down
-
-# Ver logs em tempo real
-docker-compose logs -f
-
-# Executar migrations do Prisma
-docker-compose exec backend npx prisma migrate deploy
-
-# Acessar o PostgreSQL diretamente
-docker-compose exec db psql -U user -d subsolo
+cp .env.example .env
 ```
+
+**Importante**: gere um `JWT_SECRET` forte antes de subir:
+```bash
+# Linux/Mac
+openssl rand -hex 32
+
+# Ou use qualquer gerador de string aleatória
+```
+
+### 2. Suba os serviços
+
+```bash
+docker compose up --build
+```
+
+Na primeira vez o `--build` é obrigatório. Nas próximas, basta `docker compose up`.
+
+### 3. Popule o catálogo de nicks (apenas na primeira vez)
+
+```bash
+docker compose exec backend npm run prisma:seed
+```
+
+### Serviços disponíveis
+
+| Serviço | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:3001 |
+| Swagger UI | http://localhost:3001/docs |
+| Prisma Studio | http://localhost:5555 |
+| PostgreSQL | localhost:5434 |
+
+## Comandos úteis
+
+```bash
+# Parar tudo (mantém dados)
+docker compose down
+
+# Parar e apagar banco (reset completo)
+docker compose down -v
+
+# Ver logs do backend
+docker compose logs -f backend
+
+# Acessar o banco diretamente
+docker compose exec db psql -U user -d subsolo
+
+# Rodar seed novamente (idempotente)
+docker compose exec backend npm run prisma:seed
+
+# Abrir Prisma Studio
+docker compose up prisma-studio
+```
+
+## Arquitetura de Autenticação
+
+O sistema usa **identidades temporárias** desvinculadas da conta real:
+
+- O usuário se cadastra com e-mail + senha (hash bcrypt)
+- No login, o backend sorteia um Nick do `NickCatalogue` e o vincula ao usuário por 48h
+- O JWT contém `userId` (interno) e `nickId` (usado em posts/votos/comentários)
+- Quando o nick expira, um novo é sorteado automaticamente no próximo login
+- O nick anterior é reativado no catálogo e pode ser atribuído a outro usuário
+
+Veja `backend/AUTH_CONTEXT.md` para a documentação técnica completa.
 
 ---
 
-*Desenvolvido com foco em segurança, escalabilidade e na melhor experiência universitária.*
+*Desenvolvido com foco em privacidade, segurança e experiência universitária.*
