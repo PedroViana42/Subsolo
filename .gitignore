@@ -4,5 +4,11 @@ dist/
 coverage/
 .DS_Store
 *.log
-.env*
+
+# Variáveis de ambiente — nunca commitar o .env real
+.env
+.env.*
 !.env.example
+
+# Configurações locais do Claude Code
+.claude/

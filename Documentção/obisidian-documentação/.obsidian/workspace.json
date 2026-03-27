@@ -181,6 +181,7 @@
   },
   "active": "9b7422cb85dd5b2f",
   "lastOpenFiles": [
+    "04-design/AUTH_CONTEXT.md",
     "02-tech/Autenticação JWT.md",
     "02-tech/Middleware de Proteção.md",
     "02-tech/Hashing de Senha.md",

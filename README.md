@@ -5,68 +5,108 @@
 
 ---
 
-## 🕳️ O que é o Subsolo?
-O **Subsolo** é uma rede social anônima projetada para integrar a comunidade através de confissões, fofocas e utilidade pública, sem o peso da identidade real.
+## O que é o Subsolo?
 
-Utilizando o conceito de **Identidades Temporais**, o Subsolo garante que a privacidade venha em primeiro lugar, permitindo que a voz da comunidade seja ouvida sem julgamentos persistentes.
+O **Subsolo** é uma rede social universitária anônima para confissões, fofocas e utilidade pública dentro do campus. O diferencial é o sistema de **Identidades Temporais** — cada usuário recebe um apelido único que expira em 48h, impedindo rastreamento histórico de longo prazo.
 
-## 🚀 Principais Funcionalidades
+## Funcionalidades
 
-- **🎭 Identidade Temporal (48h)** (Em Desenvolvimento 🚧): Sua máscara no Subsolo (Nick) expira e se renova a cada 48 horas, evitando rastreamento histórico de longo prazo.
-- **✅ Sistema Fato/Fic** (Em Desenvolvimento 🚧): A comunidade valida a veracidade das postagens. "Real Oficial" vs "Pura Fic" decidem sua reputação na rede.
-- **😇 Honesty Score** (Em Desenvolvimento 🚧): Uma aura visual que acompanha seu Nick, baseada no seu histórico de veracidade nas últimas sessões.
-- **🍱 O Fiscal do RU** (Em Desenvolvimento 🚧): Menu diário do Restaurante Universitário com votação em tempo real sobre a qualidade da comida.
-- **📅 Agenda do Campus** (Em Desenvolvimento 🚧): Widgets dinâmicos com os próximos eventos, festas e avisos acadêmicos.
+| Feature | Status |
+|---|---|
+| 🎭 Identidade Temporal (Nick 48h) | ✅ Implementado |
+| 🔐 Cadastro e Login com JWT | ✅ Implementado |
+| ✅ Sistema Fato/Fic | 🚧 Em Desenvolvimento |
+| 😇 Honesty Score | 🚧 Em Desenvolvimento |
+| 🍱 Fiscal do RU | 🚧 Em Desenvolvimento |
+| 📅 Agenda do Campus | 🚧 Em Desenvolvimento |
 
-## 🛠️ Stack Tecnológica
+## Stack
 
-- **Frontend**: Vite + React + Tailwind CSS (Localizado em `/frontend`)
-- **Backend API**: Express (Node.js) + Prisma ORM (Localizado em `/backend`)
-- **Banco de Dados**: PostgreSQL
+- **Frontend**: React 19 + Vite 6 + Tailwind CSS 4
+- **Backend**: Express 4 + Node.js 22 + TypeScript
+- **Banco**: PostgreSQL 17 + Prisma 7 ORM
+- **Auth**: JWT (stateless, 48h) + bcryptjs
 - **Infra**: Docker + Docker Compose
 
-## 📦 Como Rodar Localmente
+## Rodando com Docker
 
-### 🐳 Via Docker (Recomendado)
+### Pré-requisitos
+- Docker e Docker Compose instalados
 
-A maneira mais fácil e rápida de rodar o ambiente completo (Front, Back e DB):
+### 1. Configure as variáveis de ambiente
 
-1. **Certifique-se de ter o Docker instalado.**
-2. **Inicie os containers:**
-   ```bash
-   docker compose up -d
-   ```
-3. **Acesse as aplicações:**
-   - **Frontend:** [localhost:3000](http://localhost:3000)
-   - **Backend API:** [localhost:3001](http://localhost:3001)
-   - **Prisma Studio (Banco de Dados):** [localhost:5555](http://localhost:5555)
+Copie o `.env.example` e preencha com seus valores:
+
+```bash
+cp .env.example .env
+```
+
+**Importante**: gere um `JWT_SECRET` forte antes de subir:
+```bash
+# Linux/Mac
+openssl rand -hex 32
+
+# Ou use qualquer gerador de string aleatória
+```
+
+### 2. Suba os serviços
+
+```bash
+docker compose up --build
+```
+
+Na primeira vez o `--build` é obrigatório. Nas próximas, basta `docker compose up`.
+
+### 3. Popule o catálogo de nicks (apenas na primeira vez)
+
+```bash
+docker compose exec backend npm run prisma:seed
+```
+
+### Serviços disponíveis
+
+| Serviço | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:3001 |
+| Swagger UI | http://localhost:3001/docs |
+| Prisma Studio | http://localhost:5555 |
+| PostgreSQL | localhost:5434 |
+
+## Comandos úteis
+
+```bash
+# Parar tudo (mantém dados)
+docker compose down
+
+# Parar e apagar banco (reset completo)
+docker compose down -v
+
+# Ver logs do backend
+docker compose logs -f backend
+
+# Acessar o banco diretamente
+docker compose exec db psql -U user -d subsolo
+
+# Rodar seed novamente (idempotente)
+docker compose exec backend npm run prisma:seed
+
+# Abrir Prisma Studio
+docker compose up prisma-studio
+```
+
+## Arquitetura de Autenticação
+
+O sistema usa **identidades temporárias** desvinculadas da conta real:
+
+- O usuário se cadastra com e-mail + senha (hash bcrypt)
+- No login, o backend sorteia um Nick do `NickCatalogue` e o vincula ao usuário por 48h
+- O JWT contém `userId` (interno) e `nickId` (usado em posts/votos/comentários)
+- Quando o nick expira, um novo é sorteado automaticamente no próximo login
+- O nick anterior é reativado no catálogo e pode ser atribuído a outro usuário
+
+Veja `backend/AUTH_CONTEXT.md` para a documentação técnica completa.
 
 ---
 
-### 💻 Manualmente (Desenvolvimento)
-
-Se preferir rodar os serviços individualmente fora do container:
-
-1. **Instale as dependências** (na raiz do projeto):
-   ```bash
-   npm install
-   ```
-2. **Configuração**:
-   Crie os arquivos `.env` nas pastas `/frontend` e `/backend` baseando-se nos exemplos.
-3. **Suba o Banco de Dados** (pode usar o Docker apenas para o DB):
-   ```bash
-   docker compose up -d db
-   ```
-4. **Inicie o Ambiente**:
-
-   **Para o Frontend:**
-   ```bash
-   npm run dev:frontend
-   ```
-
-   **Para o Backend:**
-   ```bash
-   npm run dev:backend
-   ```
-
----
+*Desenvolvido com foco em privacidade, segurança e experiência universitária.*
