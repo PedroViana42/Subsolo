@@ -166,8 +166,8 @@ export default function App() {
     <div className="min-h-screen bg-[#000000] text-zinc-100 font-sans selection:bg-violet-500/30">
       <Header onLogoClick={() => setCurrentView('feed')} onLogout={handleLogout} />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="max-w-[1440px] mx-auto px-4 py-8">
+        <div className="flex flex-col xl:flex-row gap-8">
           <LeftSidebar identity={identity} currentView={currentView} onViewChange={setCurrentView} />
 
           <main className="flex-1 min-w-0">

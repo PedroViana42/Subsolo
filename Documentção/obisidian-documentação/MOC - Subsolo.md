@@ -43,4 +43,10 @@ Bem-vindo à documentação estratégica do **Subsolo**. Esta nota serve como po
 - [[Dashboard de Widgets]]: Estrutura modular de utilitários de campus.
 
 ---
+
+### ✅ 5. Gestão de Projetos (Tasks)
+*Rastreio de progresso e atribuição de responsabilidades.*
+- [[Checklist de Implementação]]: Lista consolidada de tarefas concluídas e pendentes.
+
+---
 *Documentação gerada sob a ótica de Arquiteto de Software e Especialista em PKM.*

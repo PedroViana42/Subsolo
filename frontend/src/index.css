@@ -6,8 +6,30 @@
 }
 
 body {
-  background-color: #000000;
+  background-color: #030303;
   color: #f4f4f5;
+  background-image: 
+    radial-gradient(circle at 50% -20%, rgba(124, 58, 237, 0.15), transparent 60%),
+    radial-gradient(circle at 0% 100%, rgba(124, 58, 237, 0.05), transparent 40%);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-zinc-900/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)];
+  }
+
+  .glass-input {
+    @apply bg-black/40 backdrop-blur-md border border-zinc-800 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/30 transition-all duration-300;
+  }
+
+  .neon-border-violet {
+    @apply border-violet-500/30 shadow-[0_0_15px_rgba(124,58,237,0.15)];
+  }
+
+  .neon-glow-violet {
+    @apply shadow-[0_0_20px_rgba(124,58,237,0.3)];
+  }
 }
 
 /* Hide scrollbar for filter bar */
