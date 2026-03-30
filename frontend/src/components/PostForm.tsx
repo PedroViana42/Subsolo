@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Ghost, Send, Clock, Hash } from 'lucide-react';
+import { Ghost, Send, Clock, Hash, ShieldCheck } from 'lucide-react';
 import { UserIdentity, Tag } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PostFormProps {
   onPost: (content: string, tag: Tag) => Promise<void>;
@@ -37,84 +38,81 @@ export function PostForm({ onPost, identity }: PostFormProps) {
   const progressPercent = (getHoursRemaining() / 48) * 100;
 
   return (
-    <div className="bg-[#121212] rounded-2xl shadow-lg border border-zinc-800/50 p-4 sm:p-6 mb-8 transition-colors relative overflow-hidden">
-      {/* Hacker-like accent line */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600/20 via-violet-500 to-violet-600/20" />
-      
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-violet-900/30 flex items-center justify-center text-violet-400 border border-violet-500/20">
-          <Ghost size={20} />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-            Postando como: <strong className="text-zinc-100">{identity.nickname} {identity.honestyScore}</strong>
-            <div className="group relative flex items-center">
-              <Clock size={14} className="text-zinc-500 cursor-help" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-800 text-xs text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                Expira em {getHoursRemaining()}h
-              </div>
-            </div>
-          </span>
-          {/* Mini progress bar for identity */}
-          <div className="h-1 w-32 bg-zinc-800 rounded-full mt-1.5 overflow-hidden">
-            <div 
-              className="h-full bg-violet-500 transition-all duration-1000"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="O que você quer confessar hoje?"
-          className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl p-4 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 resize-none transition-all font-mono text-sm"
-          rows={4}
-          maxLength={maxChars}
-        />
-        
-        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Hash size={16} className="text-zinc-500" />
-            {TAGS.map(tag => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => setSelectedTag(tag)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedTag === tag 
-                    ? 'bg-violet-600 text-white shadow-[0_0_10px_rgba(124,58,237,0.3)]' 
-                    : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-300 border border-zinc-700/50'
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-          
-          <div className="flex items-center gap-4 self-end sm:self-auto">
-            <span className={`text-xs font-mono ${content.length >= maxChars ? 'text-red-500' : 'text-zinc-500'}`}>
-              {content.length}/{maxChars}
+    <div className="mb-12">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Textarea Bento Cell - Expanded */}
+        <div className="glass-card rounded-[3rem] p-2 relative group focus-within:ring-4 focus-within:ring-violet-500/10 transition-all">
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="O que você quer confessar hoje?"
+            className="w-full bg-transparent border-none rounded-[2.5rem] p-10 text-zinc-100 placeholder-zinc-700 focus:outline-none resize-none font-sans text-xl leading-relaxed min-h-[220px]"
+            maxLength={maxChars}
+          />
+          <div className="absolute bottom-8 right-10 text-xs font-mono text-zinc-600 font-bold bg-black/40 px-4 py-1.5 rounded-full border border-white/5 shadow-2xl">
+            <span className={content.length >= maxChars ? 'text-rose-500' : 'text-zinc-400'}>
+              {content.length}
             </span>
-            
+            <span className="opacity-40"> / {maxChars}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Tags Bento Cell */}
+          <div className="md:col-span-3 glass-card rounded-[2.25rem] p-5 flex items-center gap-4 overflow-x-auto scrollbar-hide border-white/5 hover:border-white/10 transition-colors">
+            <div className="pl-4">
+              <Hash size={20} className="text-violet-500/40" />
+            </div>
+            <div className="flex gap-3">
+              {TAGS.map(tag => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setSelectedTag(tag)}
+                  className={`whitespace-nowrap px-8 py-4 rounded-2xl text-[13px] font-black transition-all border uppercase tracking-[0.2em] ${
+                    selectedTag === tag 
+                      ? 'bg-violet-600 border-violet-500 text-white shadow-[0_0_30px_rgba(124,58,237,0.4)] scale-[1.02]' 
+                      : 'bg-zinc-800/20 border-white/5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40 hover:border-white/10'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit Bento Cell */}
+          <div className="md:col-span-1">
             <button
               type="submit"
               disabled={!content.trim() || isPosting || !selectedTag}
-              className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white px-6 py-2 rounded-lg font-medium transition-all active:scale-95 disabled:active:scale-100 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:shadow-none"
+              className="w-full h-full min-h-[84px] glass-card rounded-[2.25rem] flex items-center justify-center gap-4 group relative overflow-hidden transition-all disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed hover:bg-violet-500/10 active:scale-[0.98] border-violet-500/20"
             >
-              {isPosting ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Enviando...
-                </span>
-              ) : (
-                <>
-                  <Send size={16} />
-                  Postar
-                </>
-              )}
+              <div className="absolute inset-0 bg-gradient-to-tr from-violet-600/20 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700 pointer-events-none" />
+              
+              <AnimatePresence mode="wait">
+                {isPosting ? (
+                  <motion.div 
+                    key="posting"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                  >
+                    <div className="w-7 h-7 border-3 border-violet-500/20 border-t-violet-400 rounded-full animate-spin" />
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="idle"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    className="flex items-center gap-3 text-zinc-300 group-hover:text-violet-400 transition-colors font-black uppercase tracking-[0.3em] text-[13px]"
+                  >
+                    Postar
+                    <Send size={20} className="group-hover:translate-x-1.5 group-hover:-translate-y-1.5 transition-transform duration-500 ease-out" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
           </div>
         </div>

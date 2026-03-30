@@ -18,26 +18,10 @@ const port = process.env.PORT || 3001;
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
 app.use(express.json());
 
-// Documentação — http://localhost:3001/docs
+// Redirecionamento de docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.get('/docs.json', (_req, res) => res.json(swaggerSpec));
 
-// Rate limiters para rotas sensíveis
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' },
-});
-
-const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
-  message: { error: 'Limite de cadastros atingido. Tente novamente em 1 hora.' },
-});
-
-app.post('/auth/login', loginLimiter);
-app.post('/auth/register', registerLimiter);
-
+// Rotas
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Subsolo Backend is running' });
 });
@@ -50,7 +34,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: 'Erro interno do servidor.' });
 });
 
-app.listen(port, () => {
-  console.log(`Backend rodando em http://localhost:${port}`);
-  console.log(`Swagger UI em    http://localhost:${port}/docs`);
+app.listen(Number(port), '0.0.0.0', () => {
+  console.log(`Backend rodando em http://0.0.0.0:${port}`);
+  console.log(`Swagger UI em    http://0.0.0.0:${port}/docs`);
 });

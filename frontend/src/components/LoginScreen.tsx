@@ -3,6 +3,7 @@ import { Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { login, register } from '../services/auth';
 import type { NickData } from '../services/auth';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Mode = 'login' | 'register';
 
@@ -50,84 +51,107 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] flex flex-col items-center justify-center p-4 selection:bg-violet-500/30">
-      <div className="w-full max-w-md bg-[#121212] rounded-2xl border border-zinc-800/50 p-8 shadow-2xl relative overflow-hidden">
-        {/* Glow effect */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-violet-600/20 blur-[50px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-[#030303] flex flex-col items-center justify-center p-4 selection:bg-violet-500/30 overflow-hidden relative">
+      {/* Dynamic Background elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-600/10 blur-[120px] rounded-full pointer-events-none" />
+
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: "circOut" }}
+        className="w-full max-w-lg glass-card rounded-[3rem] p-12 relative overflow-hidden shadow-2xl"
+      >
+        {/* Glow accent */}
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
 
         {/* Header */}
-        <div className="flex flex-col items-center mb-8 relative z-10">
+        <div className="flex flex-col items-center mb-10 relative z-10">
           {mode === 'register' ? (
             <button
               type="button"
               onClick={() => switchMode('login')}
-              className="self-start flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm mb-6 transition-colors"
+              className="self-start flex items-center gap-2 text-zinc-500 hover:text-zinc-300 text-xs mb-8 transition-all font-black uppercase tracking-widest bg-white/5 px-4 py-2 rounded-xl group"
             >
-              <ArrowLeft size={15} />
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
               Voltar
             </button>
           ) : (
-            <img src={logo} alt="Subsolo" className="h-16 mb-4" />
+            <motion.img 
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              src={logo} 
+              alt="Subsolo" 
+              className="h-20 mb-6 drop-shadow-[0_0_15px_rgba(139,92,246,0.2)]" 
+            />
           )}
 
-          <h1 className="text-2xl font-bold text-zinc-100">
+          <h1 className="text-3xl font-black text-zinc-100 tracking-tight">
             {mode === 'login' ? 'Bem-vindo ao Subsolo.' : 'Criar Conta'}
           </h1>
-          <p className="text-sm text-zinc-500 mt-2 text-center">
+          <p className="text-[15px] text-zinc-500 mt-4 text-center leading-relaxed font-medium max-w-sm">
             {mode === 'login'
-              ? 'A rede social restrita. Faça login com seu e-mail institucional para acessar.'
-              : 'Crie sua conta para receber uma identidade temporária de 48h.'}
+              ? 'A rede social restrita. Faça login com seu e-mail institucional para acessar o submundo.'
+              : 'Crie sua conta para receber uma identidade temporária e forjada de 48h.'}
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           {error && (
-            <div className="bg-rose-900/20 border border-rose-900/50 text-rose-400 p-3 rounded-xl text-sm flex items-start gap-2">
-              <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-5 rounded-2xl text-[13px] flex items-start gap-3 shadow-lg"
+            >
+              <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+              <span className="font-medium leading-relaxed">{error}</span>
+            </motion.div>
           )}
 
           {successMsg && (
-            <div className="bg-emerald-900/20 border border-emerald-900/50 text-emerald-400 p-3 rounded-xl text-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-5 rounded-2xl text-[13px] font-bold shadow-lg"
+            >
               ✓ {successMsg}
-            </div>
+            </motion.div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">
+          <div className="space-y-2.5">
+            <label className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em] pl-2">
               E-mail Institucional
             </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+            <div className="relative group">
+              <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-violet-400 transition-all duration-300" size={20} />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nome@instituicao.edu.br"
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all font-mono text-sm"
+                className="w-full glass-input rounded-2xl py-5 pl-14 pr-6 text-zinc-100 placeholder-zinc-700 transition-all font-sans text-[15px] focus:ring-2 focus:ring-violet-500/20"
                 required
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">
-              Senha{' '}
+          <div className="space-y-2.5">
+            <label className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em] pl-2 flex justify-between">
+              Senha
               {mode === 'register' && (
-                <span className="text-zinc-600 normal-case font-normal">(mín. 8 caracteres)</span>
+                <span className="text-zinc-700 normal-case font-bold tracking-tight text-[10px]">mín. 8 caracteres</span>
               )}
             </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+            <div className="relative group">
+              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-violet-400 transition-all duration-300" size={20} />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 minLength={mode === 'register' ? 8 : undefined}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all font-mono text-sm"
+                className="w-full glass-input rounded-2xl py-5 pl-14 pr-6 text-zinc-100 placeholder-zinc-700 transition-all font-sans text-[15px] focus:ring-2 focus:ring-violet-500/20"
                 required
               />
             </div>
@@ -136,32 +160,43 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           <button
             type="submit"
             disabled={isLoading || !email || !password}
-            className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 disabled:active:scale-100 flex items-center justify-center gap-2 mt-2"
+            className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-900 disabled:text-zinc-700 text-white font-black py-5 rounded-[1.5rem] transition-all active:scale-[0.98] disabled:active:scale-100 flex items-center justify-center gap-3 mt-8 shadow-2xl group overflow-hidden relative uppercase tracking-[0.2em] text-xs"
           >
-            {isLoading ? (
-              <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-            ) : mode === 'login' ? (
-              'Entrar no Submundo'
-            ) : (
-              'Criar Minha Conta'
-            )}
+            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 pointer-events-none" />
+            <span className="relative z-10 flex items-center gap-3">
+              {isLoading ? (
+                <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin" />
+              ) : mode === 'login' ? (
+                'Acessar Submundo'
+              ) : (
+                'Forjar Minha Máscara'
+              )}
+            </span>
           </button>
 
           {/* Switch mode */}
-          {mode === 'login' && (
-            <p className="text-center text-sm text-zinc-500 pt-2">
-              Não tem uma conta?{' '}
-              <button
-                type="button"
-                onClick={() => switchMode('register')}
-                className="text-violet-400 hover:text-violet-300 font-semibold transition-colors"
-              >
-                Criar conta
-              </button>
-            </p>
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={mode}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              className="pt-2 text-center"
+            >
+              <p className="text-sm text-zinc-500">
+                {mode === 'login' ? 'Não tem uma conta? ' : 'Já possui uma conta? '}
+                <button
+                  type="button"
+                  onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
+                  className="text-violet-400 hover:text-violet-300 font-semibold transition-colors decoration-violet-400/30 underline-offset-4 hover:underline"
+                >
+                  {mode === 'login' ? 'Criar conta' : 'Fazer login'}
+                </button>
+              </p>
+            </motion.div>
+          </AnimatePresence>
         </form>
-      </div>
+      </motion.div>
 
       <p className="text-xs text-zinc-600 mt-8 text-center max-w-sm">
         O Subsolo é uma plataforma de anonimato controlado.
