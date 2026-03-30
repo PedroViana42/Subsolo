@@ -54,6 +54,34 @@ const nicknames = [
   { name: 'Lattes Desatualizado',    category: 'Acadêmico' },
 ];
 
+const badges = [
+  { 
+    name: 'Pioneiro', 
+    description: 'Usuário registrado durante o primeiro mês de lançamento.', 
+    icon: '🏛️' 
+  },
+  { 
+    name: 'Voz da Comunidade', 
+    description: 'Teve um post que atingiu mais de 50 votos Fact (Real Oficial).', 
+    icon: '📢' 
+  },
+  { 
+    name: 'Detetive', 
+    description: 'Realizou 10 ou mais denúncias que foram validadas pela moderação.', 
+    icon: '🔍' 
+  },
+  { 
+    name: 'Sentinela do RU', 
+    description: 'Votou na qualidade da comida no widget "Fiscal do RU" mais de 30 vezes.', 
+    icon: '🍛' 
+  },
+  { 
+    name: 'Mestre da Verdade', 
+    description: 'Mantém um Score de Honestidade acima de 90% após receber mais de 100 votos.', 
+    icon: '😇' 
+  },
+];
+
 async function main() {
   console.log('Populando NickCatalogue...');
   for (const nick of nicknames) {
@@ -64,6 +92,16 @@ async function main() {
     });
   }
   console.log(`${nicknames.length} nicknames inseridos com sucesso.`);
+
+  console.log('Populando Badges...');
+  for (const badge of badges) {
+    await prisma.badge.upsert({
+      where: { name: badge.name },
+      update: {},
+      create: badge,
+    });
+  }
+  console.log(`${badges.length} badges inseridas com sucesso.`);
 }
 
 main()
