@@ -8,13 +8,14 @@ import { ViewHeader } from './components/ViewHeader';
 import { FilterBar } from './components/FilterBar';
 import { LoginScreen } from './components/LoginScreen';
 import { MaskGenerationScreen } from './components/MaskGenerationScreen';
+import { EmailVerifyScreen } from './components/EmailVerifyScreen';
 import { ReportModal } from './components/ReportModal';
 import { Post, UserIdentity, Comment, Tag, View } from './types';
 import { INITIAL_POSTS } from './constants/posts';
 import { ALL_TAGS } from './constants/tags';
 import type { NickData } from './services/auth';
 
-type AuthState = 'login' | 'mask' | 'app';
+type AuthState = 'login' | 'mask' | 'app' | 'verifying';
 
 function nickToIdentity(nick: NickData): UserIdentity {
   return {
@@ -39,18 +40,61 @@ export default function App() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const [verifyToken, setVerifyToken] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('verify');
+  });
+
   useEffect(() => {
     document.documentElement.classList.add('dark');
+
+    if (verifyToken) {
+      setAuthState('verifying');
+      return;
+    }
+
+    const token = localStorage.getItem('subsolo_token');
+    const nickRaw = localStorage.getItem('subsolo_nick');
+    if (token && nickRaw) {
+      try {
+        const nick: NickData = JSON.parse(nickRaw);
+        if (new Date(nick.expiresAt) > new Date()) {
+          setIdentity(nickToIdentity(nick));
+          setAuthState('app');
+        } else {
+          localStorage.removeItem('subsolo_token');
+          localStorage.removeItem('subsolo_nick');
+        }
+      } catch {
+        localStorage.removeItem('subsolo_token');
+        localStorage.removeItem('subsolo_nick');
+      }
+    }
   }, []);
 
   const handleLoginSuccess = (token: string, nick: NickData) => {
     localStorage.setItem('subsolo_token', token);
+    localStorage.setItem('subsolo_nick', JSON.stringify(nick));
     setIdentity(nickToIdentity(nick));
-    setAuthState('mask');
+
+    const maskKey = `has_seen_mask_for_${nick.name}`;
+    if (localStorage.getItem(maskKey) === 'true') {
+      setAuthState('app');
+    } else {
+      setAuthState('mask');
+    }
+  };
+
+  const handleAcceptMask = () => {
+    if (identity) {
+      localStorage.setItem(`has_seen_mask_for_${identity.nickname}`, 'true');
+    }
+    setAuthState('app');
   };
 
   const handleLogout = () => {
     localStorage.removeItem('subsolo_token');
+    localStorage.removeItem('subsolo_nick');
     setIdentity(null);
     setAuthState('login');
   };
@@ -147,6 +191,18 @@ export default function App() {
 
   const filteredPosts = getFilteredPosts();
 
+  if (authState === 'verifying' && verifyToken) {
+    return (
+      <EmailVerifyScreen
+        token={verifyToken}
+        onSuccess={() => {
+          setVerifyToken(null);
+          setAuthState('login');
+        }}
+      />
+    );
+  }
+
   if (authState === 'login') {
     return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
   }
@@ -155,7 +211,7 @@ export default function App() {
     return (
       <MaskGenerationScreen
         identity={identity}
-        onAcceptMask={() => setAuthState('app')}
+        onAcceptMask={handleAcceptMask}
       />
     );
   }

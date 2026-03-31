@@ -12,9 +12,9 @@ Este documento serve para o rastreio granular de tarefas e atribuição de respo
 | Definição de Schema Prisma | Pedro | ✅ Concluído | - |
 | Lógica de Rotação de Identidade (48h) | Pedro | ✅ Concluído | - |
 | Sistema de Fato-Fic (Mock Inicial) | Pedro | ✅ Concluído | - |
-| Persistência de Sessão (Auto-login) | Alexandre | ⏳ Pendente | - |
-| Lógica de Exibição de Identidade (Mask) | Alexandre | ⏳ Pendente | - |
-| Auditoria de Expiração (48h/Sincronia) | Alexandre | ⏳ Pendente | - |
+| Persistência de Sessão (Auto-login) | Alexandre | ✅ Concluído | 30/03/2026 |
+| Lógica de Exibição de Identidade (Mask) | Alexandre | ✅ Concluído | 30/03/2026 |
+| Auditoria de Expiração (48h/Sincronia) | Alexandre | ✅ Concluído | 30/03/2026 |
 | Lógica de Votos (Fato/Fic) Real | [A DEFINIR] | ⏳ Pendente | - |
 | Filtro Global de Busca | [A DEFINIR] | ⏳ Pendente | - |
 
@@ -42,8 +42,8 @@ Este documento serve para o rastreio granular de tarefas e atribuição de respo
 | :--- | :--- | :--- | :--- |
 | Setup de JWT & Auth Flow | Pedro | ✅ Concluído | - |
 | Proteção de Rotas Base (Middlewares) | Pedro | ✅ Concluído | - |
-| Validação de E-mail (Institucional) | Alexandre | ⏳ Pendente | - |
-| Validação de Senha (Complexidade) | Alexandre | ⏳ Pendente | - |
+| Validação de E-mail (Formato válido) | Alexandre | ✅ Concluído | 30/03/2026 |
+| Validação de Senha (Complexidade) | Alexandre | ✅ Concluído | 30/03/2026 |
 | Mascaramento de Identidade Real | [A DEFINIR] | ⏳ Pendente | - |
 | Sanitização Global de Inputs (XSS) | [A DEFINIR] | ⏳ Pendente | - |
 | Rate Limiting (Anti-spam) | [A DEFINIR] | ⏳ Pendente | - |

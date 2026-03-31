@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
 import logo from '../assets/logo.png';
-import { login, register } from '../services/auth';
+import { login, register, resendVerification } from '../services/auth';
 import type { NickData } from '../services/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,19 +18,57 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [showResend, setShowResend] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const switchMode = (next: Mode) => {
     setMode(next);
     setError('');
     setSuccessMsg('');
     setPassword('');
+    setShowResend(false);
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    try {
+      await resendVerification(email);
+      setShowResend(false);
+      setError('');
+      setSuccessMsg('Novo link enviado! Verifique sua caixa de entrada.');
+    } catch {
+      setSuccessMsg('Novo link enviado! Verifique sua caixa de entrada.');
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
     setSuccessMsg('');
+
+    if (mode === 'register') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Insira um e-mail válido.');
+        return;
+      }
+      if (password.length < 8) {
+        setError('A senha deve ter no mínimo 8 caracteres.');
+        return;
+      }
+      if (!/[A-Z]/.test(password)) {
+        setError('A senha deve conter pelo menos uma letra maiúscula.');
+        return;
+      }
+      if (!/[0-9]/.test(password)) {
+        setError('A senha deve conter pelo menos um número.');
+        return;
+      }
+    }
+
+    setIsLoading(true);
 
     try {
       if (mode === 'register') {
@@ -38,13 +76,16 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         setMode('login');
         setPassword('');
         setError('');
-        setSuccessMsg('Conta criada com sucesso! Faça login para entrar.');
+        setSuccessMsg('Conta criada! Enviamos um link de verificação para o seu e-mail. Confirme antes de fazer login.');
       } else {
         const { token, nick } = await login(email, password);
         onLoginSuccess(token, nick);
       }
     } catch (err: any) {
       setError(err.message);
+      if (err.message?.includes('não verificado')) {
+        setShowResend(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +132,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           </h1>
           <p className="text-[15px] text-zinc-500 mt-4 text-center leading-relaxed font-medium max-w-sm">
             {mode === 'login'
-              ? 'A rede social restrita. Faça login com seu e-mail institucional para acessar o submundo.'
+              ? 'A rede social restrita. Faça login com seu e-mail para acessar o submundo.'
               : 'Crie sua conta para receber uma identidade temporária e forjada de 48h.'}
           </p>
         </div>
@@ -99,13 +140,25 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           {error && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-5 rounded-2xl text-[13px] flex items-start gap-3 shadow-lg"
+              className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-5 rounded-2xl text-[13px] shadow-lg"
             >
-              <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
-              <span className="font-medium leading-relaxed">{error}</span>
+              <div className="flex items-start gap-3">
+                <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+                <span className="font-medium leading-relaxed">{error}</span>
+              </div>
+              {showResend && (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendLoading}
+                  className="mt-3 w-full text-center text-[12px] font-black uppercase tracking-widest text-rose-300 hover:text-white bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 py-2.5 rounded-xl transition-all disabled:opacity-50"
+                >
+                  {resendLoading ? 'Enviando...' : 'Reenviar e-mail de verificação'}
+                </button>
+              )}
             </motion.div>
           )}
 
@@ -121,7 +174,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
           <div className="space-y-2.5">
             <label className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em] pl-2">
-              E-mail Institucional
+              E-mail
             </label>
             <div className="relative group">
               <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-violet-400 transition-all duration-300" size={20} />
@@ -129,7 +182,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="nome@instituicao.edu.br"
+                placeholder="seu@email.com"
                 className="w-full glass-input rounded-2xl py-5 pl-14 pr-6 text-zinc-100 placeholder-zinc-700 transition-all font-sans text-[15px] focus:ring-2 focus:ring-violet-500/20"
                 required
               />

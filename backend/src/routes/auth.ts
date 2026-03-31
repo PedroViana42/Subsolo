@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
 import prisma from '../lib/prisma.js';
 import { assignNick } from '../services/nick.js';
 import { loginLimiter, registerLimiter } from '../middleware/limiters.js';
+import { sendVerificationEmail } from '../lib/email.js';
 
 const router = Router();
 
@@ -28,7 +30,7 @@ const loginSchema = z.object({
  *     tags:
  *       - Auth
  *     summary: Criar conta
- *     description: Registra um novo usuário. Não atribui identidade — isso acontece no login.
+ *     description: Registra um novo usuário e envia e-mail de verificação.
  *     requestBody:
  *       required: true
  *       content:
@@ -37,27 +39,11 @@ const loginSchema = z.object({
  *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
- *         description: Conta criada com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Conta criada com sucesso
+ *         description: Conta criada, e-mail de verificação enviado
  *       400:
  *         description: Dados inválidos
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  *       409:
  *         description: Email já cadastrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/register', registerLimiter, async (req, res) => {
   const result = registerSchema.safeParse(req.body);
@@ -70,8 +56,17 @@ router.post('/register', registerLimiter, async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 12);
-    await prisma.user.create({ data: { email, passwordHash } });
-    res.status(201).json({ message: 'Conta criada com sucesso' });
+    const user = await prisma.user.create({ data: { email, passwordHash } });
+
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await prisma.emailVerificationToken.create({
+      data: { userId: user.id, token, expiresAt },
+    });
+
+    await sendVerificationEmail(email, token);
+
+    res.status(201).json({ message: 'Conta criada! Verifique seu e-mail para ativar.' });
   } catch (error: any) {
     if (error.code === 'P2002') {
       res.status(409).json({ error: 'Email já cadastrado' });
@@ -88,9 +83,7 @@ router.post('/register', registerLimiter, async (req, res) => {
  *     tags:
  *       - Auth
  *     summary: Login
- *     description: |
- *       Autentica o usuário e retorna um JWT de 48h junto com a identidade temporária (Nick).
- *       Se o Nick ativo ainda não expirou, o mesmo é reutilizado. Caso contrário, um novo é sorteado do catálogo.
+ *     description: Autentica o usuário e retorna um JWT de 48h com a identidade temporária.
  *     requestBody:
  *       required: true
  *       content:
@@ -100,22 +93,12 @@ router.post('/register', registerLimiter, async (req, res) => {
  *     responses:
  *       200:
  *         description: Login bem-sucedido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
  *       400:
  *         description: Dados inválidos
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
  *         description: Credenciais inválidas
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: E-mail não verificado
  */
 router.post('/login', loginLimiter, async (req, res) => {
   const result = loginSchema.safeParse(req.body);
@@ -137,6 +120,14 @@ router.post('/login', loginLimiter, async (req, res) => {
     return;
   }
 
+  if (!user.emailVerified) {
+    res.status(403).json({
+      error: 'E-mail não verificado. Verifique sua caixa de entrada.',
+      code: 'EMAIL_NOT_VERIFIED',
+    });
+    return;
+  }
+
   const nick = await assignNick(user.id);
 
   const token = jwt.sign(
@@ -154,6 +145,93 @@ router.post('/login', loginLimiter, async (req, res) => {
       aura: nick.aura,
     },
   });
+});
+
+/**
+ * @openapi
+ * /auth/verify/{token}:
+ *   get:
+ *     tags:
+ *       - Auth
+ *     summary: Verificar e-mail
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: E-mail verificado com sucesso
+ *       400:
+ *         description: Token inválido ou expirado
+ */
+router.get('/verify/:token', async (req, res) => {
+  const { token } = req.params;
+
+  const record = await prisma.emailVerificationToken.findUnique({ where: { token } });
+
+  if (!record || record.expiresAt < new Date()) {
+    res.status(400).json({ error: 'Link inválido ou expirado.' });
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: record.userId },
+    data: { emailVerified: true },
+  });
+  await prisma.emailVerificationToken.delete({ where: { token } });
+
+  res.json({ message: 'E-mail verificado com sucesso! Faça login.' });
+});
+
+/**
+ * @openapi
+ * /auth/resend-verification:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Reenviar e-mail de verificação
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: E-mail reenviado (resposta genérica para não revelar existência do usuário)
+ */
+router.post('/resend-verification', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    res.status(400).json({ error: 'E-mail obrigatório.' });
+    return;
+  }
+
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // Resposta genérica — não revela se o e-mail existe
+  if (!user || user.emailVerified) {
+    res.json({ message: 'Se o e-mail existir e não estiver verificado, um novo link foi enviado.' });
+    return;
+  }
+
+  await prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } });
+
+  const token = randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  await prisma.emailVerificationToken.create({
+    data: { userId: user.id, token, expiresAt },
+  });
+
+  await sendVerificationEmail(email, token);
+
+  res.json({ message: 'Se o e-mail existir e não estiver verificado, um novo link foi enviado.' });
 });
 
 export default router;

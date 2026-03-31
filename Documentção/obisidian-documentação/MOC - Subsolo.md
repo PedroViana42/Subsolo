@@ -27,6 +27,7 @@ Bem-vindo à documentação estratégica do **Subsolo**. Esta nota serve como po
 - [[Hashing de Senha]]: Critérios de segurança para senhas.
 - [[Middleware de Proteção]]: Fluxo de validação de rotas.
 - [[Rate Limiting]]: Resiliência contra ataques de força bruta.
+- [[Verificação de E-mail]]: Fluxo de confirmação via Nodemailer + Gmail.
 
 ---
 

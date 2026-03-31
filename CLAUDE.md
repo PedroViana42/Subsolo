@@ -19,7 +19,7 @@ docker compose logs -f backend # Follow backend logs
 
 ### First-time setup
 ```bash
-cp .env.example .env           # Configure env vars (JWT_SECRET is mandatory)
+cp .env.example .env           # Configure env vars (see Environment Setup below)
 docker compose up --build
 docker compose exec backend npm run prisma:seed   # Populate NickCatalogue (run once)
 ```
@@ -59,11 +59,13 @@ npm run lint --workspace=frontend        # TypeScript type-check (tsc --noEmit)
 
 ## Environment Setup
 
-Copy `.env.example` to `.env`. Key variables:
+Copy `.env.example` to `.env` and also `backend/.env`. Key variables:
 - `DATABASE_URL` — `db:5432` inside Docker, `localhost:5434` outside
 - `JWT_SECRET` — **obrigatório**, gere com `openssl rand -hex 32`
-- `FRONTEND_URL` — origem permitida pelo CORS do backend
+- `FRONTEND_URL` — origem permitida pelo CORS e base do link de verificação de e-mail
 - `VITE_API_URL` — URL do backend consumida pelo frontend
+- `GMAIL_USER` — conta Gmail dedicada para envio de e-mails (ex: `subsolo.noreply@gmail.com`)
+- `GMAIL_APP_PASSWORD` — App Password de 16 chars gerado em: Google Account → Segurança → Senhas de app
 
 ## Architecture
 
@@ -74,11 +76,13 @@ npm workspaces with `frontend/` and `backend/` packages. The root `package.json`
 ```
 src/
   index.ts          — Express server, CORS, rate limiting, global error handler
-  routes/auth.ts    — POST /auth/register, POST /auth/login
+  routes/auth.ts    — POST /auth/register, POST /auth/login,
+                      GET /auth/verify/:token, POST /auth/resend-verification
   services/nick.ts  — Nick assignment logic (atomic transaction)
   middleware/auth.ts — JWT validation, attaches req.user = { userId, nickId }
   lib/
     prisma.ts       — PrismaClient singleton (with PrismaPg adapter)
+    email.ts        — Nodemailer + Gmail (sendVerificationEmail)
     swagger.ts      — OpenAPI 3.0 spec
 prisma/
   schema.prisma     — Database schema
@@ -93,21 +97,26 @@ prisma/
 ### Frontend (`frontend/`)
 ```
 src/
-  App.tsx              — Root component, auth state machine (login → mask → app)
-  services/auth.ts     — fetch wrappers for /auth/register and /auth/login
+  App.tsx              — Root component, auth state machine (login → verifying → mask → app)
+                         Detects ?verify=TOKEN in URL and restores session from localStorage
+  services/auth.ts     — fetch wrappers for register, login, verifyEmail, resendVerification
   components/
-    LoginScreen.tsx    — Login + register form (toggle with "Criar conta" link)
-    MaskGenerationScreen.tsx — Shows nick assigned by backend
+    LoginScreen.tsx    — Login + register form with validation; shows resend button on 403
+    MaskGenerationScreen.tsx — Shows nick assigned by backend (only on new nick)
+    EmailVerifyScreen.tsx    — Handles email verification link (loading/success/error states)
     Header.tsx         — Logo + logout button
     ...                — Feed, PostForm, sidebars (still using mock data)
 ```
 
-- **Auth state**: `'login' | 'mask' | 'app'` in App.tsx
-- **Token storage**: `localStorage` under key `subsolo_token`
+- **Auth state**: `'login' | 'verifying' | 'mask' | 'app'` in App.tsx
+- **Token storage**: `localStorage` keys `subsolo_token` + `subsolo_nick`
+- **Session restore**: on load, checks token + nick expiry; skips login if still valid
+- **Mask screen**: shown only once per nick via `has_seen_mask_for_[nickname]` flag
 - **Path alias**: `@/*` maps to `src/`
 
 ### Data Model (Prisma)
-- **User** — Persistent account (email + passwordHash)
+- **User** — Persistent account (email + passwordHash + emailVerified)
+- **EmailVerificationToken** — One-time token (24h TTL) for email confirmation; deleted after use
 - **Nick** — Temporary identity, `expiresAt = now + 48h`, linked to `NickCatalogue` via `catalogueId`
 - **NickCatalogue** — Pool of 40 pre-seeded names; `isActive=false` means in use by an active nick
 - **Post / Vote / Comment** — All linked to `nickId`, never to `userId`
@@ -128,6 +137,8 @@ src/
 - **No default JWT_SECRET**: docker-compose uses `${JWT_SECRET:?...}` — fails fast if not set
 - **Global error handler**: prevents unhandled async throws from leaking stack traces to client
 - **Rate limiting**: login 10 req/15min, register 5 req/1h per IP
+- **Email verification**: login blocked with `403 EMAIL_NOT_VERIFIED` until confirmed; token is single-use and expires in 24h
+- **Resend endpoint**: returns generic message regardless of whether email exists (prevents user enumeration)
 
 ### Minha responsabilidade neste projeto
 
