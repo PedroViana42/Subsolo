@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { login, register, resendVerification } from '../services/auth';
 import type { NickData } from '../services/auth';
@@ -15,6 +15,9 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -26,6 +29,9 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     setError('');
     setSuccessMsg('');
     setPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     setShowResend(false);
   };
 
@@ -66,6 +72,10 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         setError('A senha deve conter pelo menos um número.');
         return;
       }
+      if (password !== confirmPassword) {
+        setError('As senhas não coincidem. Verifique a confirmação.');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -98,65 +108,65 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-600/10 blur-[120px] rounded-full pointer-events-none" />
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "circOut" }}
-        className="w-full max-w-lg glass-card rounded-[3rem] p-12 relative overflow-hidden shadow-2xl"
+        transition={{ duration: 0.4, ease: "circOut" }}
+        className="w-full max-w-md brute-card rounded-2xl p-8 sm:p-10 relative overflow-hidden shadow-2xl"
       >
         {/* Glow accent */}
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
+        <div className="absolute top-0 left-0 w-full h-1 bg-violet-600" />
 
         {/* Header */}
-        <div className="flex flex-col items-center mb-10 relative z-10">
+        <div className="flex flex-col items-center mb-8 relative z-10">
           {mode === 'register' ? (
             <button
               type="button"
               onClick={() => switchMode('login')}
-              className="self-start flex items-center gap-2 text-zinc-500 hover:text-zinc-300 text-xs mb-8 transition-all font-black uppercase tracking-widest bg-white/5 px-4 py-2 rounded-xl group"
+              className="self-start flex items-center gap-2 text-zinc-500 hover:text-zinc-300 text-[10px] mb-6 transition-all font-mono font-black uppercase tracking-widest bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded group"
             >
               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-              Voltar
+              VOLTAR
             </button>
           ) : (
             <motion.img 
-              initial={{ y: -10, opacity: 0 }}
+              initial={{ y: -5, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               src={logo} 
               alt="Subsolo" 
-              className="h-20 mb-6 drop-shadow-[0_0_15px_rgba(139,92,246,0.2)]" 
+              className="h-14 mb-4 drop-shadow-[0_0_10px_rgba(139,92,246,0.3)]" 
             />
           )}
 
-          <h1 className="text-3xl font-black text-zinc-100 tracking-tight">
-            {mode === 'login' ? 'Bem-vindo ao Subsolo.' : 'Criar Conta'}
+          <h1 className="text-2xl font-mono font-black text-zinc-100 tracking-tighter uppercase italic">
+            {mode === 'login' ? '_Acessar_Subsolo' : '_Forjar_Identidade'}
           </h1>
-          <p className="text-[15px] text-zinc-500 mt-4 text-center leading-relaxed font-medium max-w-sm">
+          <p className="text-[13px] text-zinc-600 mt-2 text-center leading-relaxed font-mono font-bold max-w-sm uppercase tracking-tighter">
             {mode === 'login'
-              ? 'A rede social restrita. Faça login com seu e-mail para acessar o submundo.'
-              : 'Crie sua conta para receber uma identidade temporária e forjada de 48h.'}
+              ? '> rede social restrita / acesso nível 1'
+              : '> criação de credenciais temporárias (48h)'}
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+        <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
           {error && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-5 rounded-2xl text-[13px] shadow-lg"
+              className="bg-rose-950/40 border-2 border-rose-900 text-rose-500 p-4 rounded-xl text-[11px] shadow-lg font-mono"
             >
               <div className="flex items-start gap-3">
-                <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
-                <span className="font-medium leading-relaxed">{error}</span>
+                <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <span className="font-bold leading-relaxed">{error}</span>
               </div>
               {showResend && (
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={resendLoading}
-                  className="mt-3 w-full text-center text-[12px] font-black uppercase tracking-widest text-rose-300 hover:text-white bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 py-2.5 rounded-xl transition-all disabled:opacity-50"
+                  className="mt-3 w-full text-center text-[10px] font-mono font-black uppercase tracking-widest text-rose-400 hover:text-white bg-rose-900/40 border border-rose-800 py-2 rounded-lg transition-all"
                 >
-                  {resendLoading ? 'Enviando...' : 'Reenviar e-mail de verificação'}
+                  {resendLoading ? 'TRANSMITINDO...' : 'REENVIAR VERIFICAÇÃO'}
                 </button>
               )}
             </motion.div>
@@ -164,65 +174,101 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
           {successMsg && (
             <motion.div 
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-5 rounded-2xl text-[13px] font-bold shadow-lg"
+              className="bg-emerald-950/40 border-2 border-emerald-900 text-emerald-500 p-4 rounded-xl text-[11px] font-mono font-bold shadow-lg"
             >
-              ✓ {successMsg}
+              [OK] {successMsg}
             </motion.div>
           )}
 
-          <div className="space-y-2.5">
-            <label className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em] pl-2">
-              E-mail
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono font-black text-zinc-600 uppercase tracking-widest pl-1">
+              E-mail_Address
             </label>
             <div className="relative group">
-              <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-violet-400 transition-all duration-300" size={20} />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-violet-500 transition-all" size={18} />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                className="w-full glass-input rounded-2xl py-5 pl-14 pr-6 text-zinc-100 placeholder-zinc-700 transition-all font-sans text-[15px] focus:ring-2 focus:ring-violet-500/20"
+                placeholder="USER@DOMAIN.COM"
+                className="w-full brute-input rounded-xl py-4 pl-12 pr-4 text-zinc-100 placeholder-zinc-800 transition-all font-mono text-[14px]"
                 required
               />
             </div>
           </div>
 
-          <div className="space-y-2.5">
-            <label className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em] pl-2 flex justify-between">
-              Senha
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono font-black text-zinc-600 uppercase tracking-widest pl-1 flex justify-between">
+              Secret_Key
               {mode === 'register' && (
-                <span className="text-zinc-700 normal-case font-bold tracking-tight text-[10px]">mín. 8 caracteres</span>
+                <span className="text-zinc-800 normal-case font-bold tracking-tight text-[9px] uppercase">mín_8_chars</span>
               )}
             </label>
             <div className="relative group">
-              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-violet-400 transition-all duration-300" size={20} />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-violet-500 transition-all" size={18} />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="********"
                 minLength={mode === 'register' ? 8 : undefined}
-                className="w-full glass-input rounded-2xl py-5 pl-14 pr-6 text-zinc-100 placeholder-zinc-700 transition-all font-sans text-[15px] focus:ring-2 focus:ring-violet-500/20"
+                className="w-full brute-input rounded-xl py-4 pl-12 pr-12 text-zinc-100 placeholder-zinc-800 transition-all font-mono text-[14px]"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-700 hover:text-zinc-500 transition-colors pt-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
+
+          {mode === 'register' && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="space-y-2 overflow-hidden"
+            >
+              <label className="text-[10px] font-mono font-black text-zinc-600 uppercase tracking-widest pl-1">
+                Confirm_Secret_Key
+              </label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-violet-500 transition-all" size={18} />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="********"
+                  className="w-full brute-input rounded-xl py-4 pl-12 pr-12 text-zinc-100 placeholder-zinc-800 transition-all font-mono text-[14px]"
+                  required={mode === 'register'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-700 hover:text-zinc-500 transition-colors pt-1"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </motion.div>
+          )}
 
           <button
             type="submit"
             disabled={isLoading || !email || !password}
-            className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-900 disabled:text-zinc-700 text-white font-black py-5 rounded-[1.5rem] transition-all active:scale-[0.98] disabled:active:scale-100 flex items-center justify-center gap-3 mt-8 shadow-2xl group overflow-hidden relative uppercase tracking-[0.2em] text-xs"
+            className="w-full bg-violet-700 hover:bg-violet-600 disabled:bg-zinc-950 disabled:text-zinc-800 text-white font-mono font-black py-4 rounded-xl transition-all active:translate-x-[2px] active:translate-y-[2px] disabled:active:translate-x-0 disabled:active:translate-y-0 flex items-center justify-center gap-3 mt-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase tracking-widest text-[11px] border-2 border-violet-500 disabled:border-zinc-900"
           >
-            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 pointer-events-none" />
             <span className="relative z-10 flex items-center gap-3">
               {isLoading ? (
-                <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
               ) : mode === 'login' ? (
-                'Acessar Submundo'
+                'ESTABELECER_CONEXÃO'
               ) : (
-                'Forjar Minha Máscara'
+                'CRIPTOGRAFAR_IDENTIDADE'
               )}
             </span>
           </button>
@@ -231,19 +277,19 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           <AnimatePresence mode="wait">
             <motion.div
               key={mode}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="pt-2 text-center"
             >
-              <p className="text-sm text-zinc-500">
-                {mode === 'login' ? 'Não tem uma conta? ' : 'Já possui uma conta? '}
+              <p className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">
+                {mode === 'login' ? 'SEM_CREDENCIAIS? ' : 'POSSUI_ACESSO? '}
                 <button
                   type="button"
                   onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
-                  className="text-violet-400 hover:text-violet-300 font-semibold transition-colors decoration-violet-400/30 underline-offset-4 hover:underline"
+                  className="text-violet-500 hover:text-violet-400 font-black transition-colors"
                 >
-                  {mode === 'login' ? 'Criar conta' : 'Fazer login'}
+                  {mode === 'login' ? '[CRIAR_CONTA]' : '[FAZER_LOGIN]'}
                 </button>
               </p>
             </motion.div>

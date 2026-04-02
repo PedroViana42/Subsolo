@@ -11,9 +11,9 @@ import { MaskGenerationScreen } from './components/MaskGenerationScreen';
 import { EmailVerifyScreen } from './components/EmailVerifyScreen';
 import { ReportModal } from './components/ReportModal';
 import { Post, UserIdentity, Comment, Tag, View } from './types';
-import { INITIAL_POSTS } from './constants/posts';
 import { ALL_TAGS } from './constants/tags';
 import type { NickData } from './services/auth';
+import { getPosts, createPost, voteOnPost } from './services/posts';
 
 type AuthState = 'login' | 'mask' | 'app' | 'verifying';
 
@@ -29,7 +29,7 @@ function nickToIdentity(nick: NickData): UserIdentity {
 export default function App() {
   const [authState, setAuthState] = useState<AuthState>('login');
   const [identity, setIdentity] = useState<UserIdentity | null>(null);
-  const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [activeFilter, setActiveFilter] = useState<'#Tudo' | Tag>('#Tudo');
   const [currentView, setCurrentView] = useState<View>('feed');
   const [reportingPostId, setReportingPostId] = useState<string | null>(null);
@@ -72,6 +72,31 @@ export default function App() {
     }
   }, []);
 
+  const fetchPosts = async () => {
+    const token = localStorage.getItem('subsolo_token');
+    if (token) {
+      try {
+        const data = await getPosts(token);
+        setPosts(data);
+      } catch (error) {
+        console.error('Falha ao carregar feed', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (authState === 'app') {
+      fetchPosts();
+
+      // Polling para atualizar o feed a cada 5 segundos
+      const intervalId = setInterval(() => {
+        fetchPosts();
+      }, 5000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [authState]);
+
   const handleLoginSuccess = (token: string, nick: NickData) => {
     localStorage.setItem('subsolo_token', token);
     localStorage.setItem('subsolo_nick', JSON.stringify(nick));
@@ -100,27 +125,23 @@ export default function App() {
   };
 
   const handlePost = async (content: string, tag: Tag) => {
-    if (!identity) return;
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    const token = localStorage.getItem('subsolo_token');
+    if (!identity || !token) return;
 
-    const newPost: Post = {
-      id: Math.random().toString(36).substring(2, 9),
-      content,
-      createdAt: new Date(),
-      authorNickname: identity.nickname,
-      honestyScore: identity.honestyScore,
-      authorBadges: identity.badges,
-      factCount: 0,
-      ficCount: 0,
-      userVote: null,
-      comments: [],
-      tag,
-    };
-
-    setPosts((prev) => [newPost, ...prev]);
+    try {
+      await createPost(token, content, tag);
+      await fetchPosts(); // Refresh feed after posting
+      showToast('Confissão publicada com sucesso!', 'success');
+    } catch (error: any) {
+      showToast(error.message || 'Erro ao publicar confissão.', 'error');
+    }
   };
 
-  const handleVote = (postId: string, vote: 'fact' | 'fic') => {
+  const handleVote = async (postId: string, vote: 'fact' | 'fic') => {
+    const token = localStorage.getItem('subsolo_token');
+    if (!token) return;
+
+    // Optimistic UI update
     setPosts((prev) =>
       prev.map((post) => {
         if (post.id !== postId) return post;
@@ -129,20 +150,22 @@ export default function App() {
         let newFic = post.ficCount;
         let newVote: 'fact' | 'fic' | null = vote;
 
-        if (post.userVote === vote) {
-          newVote = null;
-          if (vote === 'fact') newFact--;
-          if (vote === 'fic') newFic--;
-        } else {
-          if (post.userVote === 'fact') newFact--;
-          if (post.userVote === 'fic') newFic--;
-          if (vote === 'fact') newFact++;
-          if (vote === 'fic') newFic++;
-        }
+        // Simplified for now: assuming server blocks duplicate votes, 
+        // we'll just increment naively to make UI feel fast.
+        if (vote === 'fact') newFact++;
+        if (vote === 'fic') newFic++;
 
         return { ...post, factCount: newFact, ficCount: newFic, userVote: newVote };
       })
     );
+
+    try {
+      await voteOnPost(token, postId, vote === 'fact');
+      await fetchPosts(); // Re-sync to get correct server truth
+    } catch (error: any) {
+      showToast(error.message || 'Sua identidade atual já votou nessa confissão.', 'error');
+      await fetchPosts(); // Revert back to original state on failure
+    }
   };
 
   const handleComment = async (postId: string, content: string) => {

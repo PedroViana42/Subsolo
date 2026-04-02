@@ -18,9 +18,9 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
   const progressPercent = (getHoursRemaining() / 48) * 100;
 
   return (
-    <aside className="w-full xl:w-72 flex-shrink-0 space-y-6">
+    <aside className="w-full xl:w-72 flex-shrink-0 space-y-4">
       {/* Identity Profile Section */}
-      <div className="glass-card rounded-[2.5rem] p-8 relative overflow-hidden group border-violet-500/10 transition-all hover:bg-white/5">
+      <div className="brute-card rounded-2xl p-6 relative overflow-hidden group transition-all">
         <div className="absolute -top-4 -right-4 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 group-hover:scale-110 group-hover:-rotate-12 pointer-events-none">
           <Ghost size={140} />
         </div>
@@ -34,15 +34,15 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
           </div>
 
           <div className="space-y-4">
-            <div className="text-[26px] font-black text-zinc-100 leading-tight tracking-tighter break-words">
+            <div className="text-xl font-black text-zinc-100 leading-tight tracking-tighter break-words font-mono uppercase">
               {identity.nickname}
-              <span className="ml-2 text-violet-500/40 text-[22px]">
+              <span className="ml-2 text-violet-500 text-lg">
                 {identity.honestyScore}
               </span>
             </div>
             
-            <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] bg-black/20 py-1.5 px-3 rounded-xl inline-flex border border-white/5">
-              <Clock size={12} className="text-violet-500/50" />
+            <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-bold uppercase tracking-widest bg-black py-1.5 px-3 rounded-lg border border-zinc-800">
+              <Clock size={12} className="text-violet-500" />
               <span>Expira em <span className="text-zinc-200 font-mono font-black">{getHoursRemaining()}h</span></span>
             </div>
           </div>
@@ -61,8 +61,8 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
       </div>
 
       {/* Navigation Menu Section */}
-      <nav className="glass-card rounded-[2.25rem] p-3 border-white/5">
-        <ul className="space-y-2">
+      <nav className="brute-card rounded-2xl p-2">
+        <ul className="space-y-1.5">
           {[
             { id: 'feed', label: 'Feed Principal', icon: Flame },
             { id: 'hall', label: 'Mural de Relíquias', icon: Trophy },
@@ -74,13 +74,13 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
               <li key={item.id}>
                 <button 
                   onClick={() => onViewChange(item.id as View)}
-                  className={`w-full flex items-center gap-4 px-6 py-4 rounded-[1.5rem] font-bold text-[11px] uppercase tracking-[0.2em] transition-all group border ${
+                  className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-xl font-mono font-black text-[10px] uppercase tracking-widest transition-all border-2 ${
                     isActive
-                      ? 'bg-violet-600/10 text-violet-400 border-violet-500/20 shadow-[0_0_25px_rgba(124,58,237,0.1)]'
-                      : 'text-zinc-500 hover:text-zinc-200 border-transparent hover:bg-white/5 hover:border-white/5'
+                      ? 'bg-violet-950/40 text-violet-400 border-violet-500 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                      : 'text-zinc-600 hover:text-zinc-300 border-zinc-800 hover:border-zinc-600'
                   }`}
                 >
-                  <Icon size={18} className={`${isActive ? 'text-violet-400' : 'text-zinc-600 group-hover:text-zinc-300'} transition-colors duration-300`} />
+                  <Icon size={16} className={`${isActive ? 'text-violet-400' : 'text-zinc-700 group-hover:text-zinc-400'} transition-colors duration-300`} />
                   {item.label}
                 </button>
               </li>

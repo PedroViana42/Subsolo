@@ -44,22 +44,22 @@ export function MaskGenerationScreen({ identity, onAcceptMask }: MaskGenerationS
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-violet-600/5 blur-[120px] rounded-full pointer-events-none" />
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "circOut" }}
-        className="w-full max-w-lg glass-card rounded-[3rem] p-12 text-center relative overflow-hidden"
+        transition={{ duration: 0.4, ease: "circOut" }}
+        className="w-full max-w-md brute-card rounded-2xl p-8 sm:p-12 text-center relative overflow-hidden"
       >
         {/* Top accent */}
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+        <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500" />
 
         <motion.div 
-          initial={{ y: 20, opacity: 0 }}
+          initial={{ y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="flex justify-center mb-10"
+          className="flex justify-center mb-8"
         >
-          <div className="h-24 w-24 bg-emerald-500/10 rounded-[2rem] flex items-center justify-center border border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.15)] bg-gradient-to-br from-emerald-500/5 to-transparent">
-            <span className="text-5xl font-black text-emerald-400">{identity.honestyScore}</span>
+          <div className="h-20 w-20 bg-emerald-950/40 rounded-xl flex items-center justify-center border-2 border-emerald-500 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <span className="text-4xl font-mono font-black text-emerald-400">{identity.honestyScore}</span>
           </div>
         </motion.div>
 
@@ -68,30 +68,28 @@ export function MaskGenerationScreen({ identity, onAcceptMask }: MaskGenerationS
            animate={{ opacity: 1 }}
            transition={{ delay: 0.4 }}
         >
-          <h1 className="text-3xl font-black text-zinc-100 mb-3 tracking-tight">Sua Identidade Subsolo</h1>
-          <p className="text-[15px] text-zinc-500 mb-10 max-w-sm mx-auto leading-relaxed">
-            Uma máscara temporária foi forjada para você. <br/>
-            Validade: <span className="text-emerald-400 font-black font-mono">48h</span>.
+          <h1 className="text-xl font-mono font-black text-zinc-100 mb-2 tracking-tighter uppercase italic">_Identidade_Subsolo_Forjada</h1>
+          <p className="text-[12px] text-zinc-600 mb-8 max-w-xs mx-auto leading-relaxed font-mono font-bold uppercase tracking-tighter">
+            &gt; máscara temporária atribuída <br/>
+            &gt; validade: <span className="text-emerald-500 font-black">48h</span>
           </p>
         </motion.div>
 
-        <div className="bg-black/40 border border-white/5 rounded-[2rem] p-10 mb-10 relative group shadow-inner">
-          <div className="absolute inset-0 bg-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] pointer-events-none" />
-          
-          <div className="text-[11px] font-black text-violet-400/60 uppercase tracking-[0.4em] mb-4">Pseudônimo Atribuído</div>
-          <div className="text-4xl font-black text-zinc-100 font-mono tracking-tighter break-all">
+        <div className="bg-black border-2 border-zinc-800 rounded-xl p-6 sm:p-8 mb-8 relative group">
+          <div className="text-[10px] font-mono font-black text-violet-500 uppercase tracking-widest mb-4">_Pseudônimo_Gerado</div>
+          <div className="text-3xl font-black text-zinc-100 font-mono tracking-tighter break-all uppercase italic">
             {displayText}
           </div>
 
           <AnimatePresence>
             {isRevealed && (
               <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mt-8 flex items-center justify-center gap-3 text-xs font-black text-emerald-400 bg-emerald-400/5 py-2.5 px-6 rounded-full inline-flex border border-emerald-500/20 uppercase tracking-widest shadow-lg"
+                className="mt-6 flex items-center justify-center gap-2 text-[10px] font-mono font-black text-emerald-500 bg-emerald-950/40 py-2 px-4 rounded border border-emerald-500 uppercase tracking-tighter shadow-lg"
               >
-                <Shield size={16} />
-                <span>Anonimato Controlado Ativo</span>
+                <Shield size={14} />
+                <span>Anonimato_Ativo</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -102,12 +100,11 @@ export function MaskGenerationScreen({ identity, onAcceptMask }: MaskGenerationS
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
           onClick={onAcceptMask}
-          className="w-full bg-zinc-100 hover:bg-white text-black font-black py-5 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 group relative overflow-hidden uppercase tracking-[0.2em] text-[13px] shadow-2xl"
+          className="w-full bg-zinc-100 hover:bg-white text-black font-mono font-black py-4 rounded-xl transition-all active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-3 group relative overflow-hidden uppercase tracking-widest text-[11px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-zinc-300"
         >
-          <div className="absolute inset-0 bg-emerald-500/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 pointer-events-none" />
-          <span className="relative z-10 flex items-center gap-3">
-            <Sparkles size={20} className="group-hover:rotate-12 transition-transform duration-500" />
-            Aceitar & Acessar
+          <span className="relative z-10 flex items-center gap-2">
+            <Sparkles size={16} />
+            ACEITAR_&_ACESSAR_SUBSOLO
           </span>
         </motion.button>
       </motion.div>

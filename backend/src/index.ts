@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './lib/swagger.js';
 import authRouter from './routes/auth.js';
+import postsRouter from './routes/posts.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/auth', authRouter);
+app.use('/posts', postsRouter);
 
 // Handler global de erros — captura qualquer throw em rotas async
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

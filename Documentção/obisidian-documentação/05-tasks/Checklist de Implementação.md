@@ -5,6 +5,7 @@ Este documento serve para o rastreio granular de tarefas e atribuição de respo
 ---
 
 ## 🏗️ 1. Core & Arquitetura
+
 *Regras de negócio, base de dados e lógica central.*
 
 | Tarefa | Responsável | Status | Data |
@@ -15,12 +16,13 @@ Este documento serve para o rastreio granular de tarefas e atribuição de respo
 | Persistência de Sessão (Auto-login) | Alexandre | ✅ Concluído | 30/03/2026 |
 | Lógica de Exibição de Identidade (Mask) | Alexandre | ✅ Concluído | 30/03/2026 |
 | Auditoria de Expiração (48h/Sincronia) | Alexandre | ✅ Concluído | 30/03/2026 |
-| Lógica de Votos (Fato/Fic) Real | [A DEFINIR] | ⏳ Pendente | - |
+| Lógica de Votos (Fato/Fic) Real | Pedro | ✅ Concluído | 02/04/2026 |
 | Filtro Global de Busca | [A DEFINIR] | ⏳ Pendente | - |
 
 ---
 
 ## 🎨 2. Frontend & UI/UX
+
 *Interface, componentes e experiência do usuário.*
 
 | Tarefa | Responsável | Status | Data |
@@ -36,6 +38,7 @@ Este documento serve para o rastreio granular de tarefas e atribuição de respo
 ---
 
 ## 🛡️ 3. Segurança & Anonimato
+
 *Proteção de dados e camadas de privacidade.*
 
 | Tarefa | Responsável | Status | Data |
@@ -45,12 +48,13 @@ Este documento serve para o rastreio granular de tarefas e atribuição de respo
 | Validação de E-mail (Formato válido) | Alexandre | ✅ Concluído | 30/03/2026 |
 | Validação de Senha (Complexidade) | Alexandre | ✅ Concluído | 30/03/2026 |
 | Mascaramento de Identidade Real | [A DEFINIR] | ⏳ Pendente | - |
-| Sanitização Global de Inputs (XSS) | [A DEFINIR] | ⏳ Pendente | - |
-| Rate Limiting (Anti-spam) | [A DEFINIR] | ⏳ Pendente | - |
+| Sanitização Global de Inputs (XSS) | Pedro | ✅ Concluído | 02/04/2026 |
+| Rate Limiting (Anti-spam) | Pedro | ✅ Concluído | 02/04/2026 |
 
 ---
 
 ## 🚢 4. DevOps & Infra
+
 *Containerização, logs e ambiente de produção.*
 
 | Tarefa | Responsável | Status | Data |

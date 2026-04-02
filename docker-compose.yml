@@ -32,7 +32,7 @@ services:
       GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD:-}
     ports:
       - "3001:3001"
-    command: sh -c "npx prisma db push && npm run dev"
+    command: sh -c "cd /app/backend && npx prisma db push && npx tsx prisma/seed.ts && npm run dev"
     volumes:
       - ./backend:/app/backend
       - /app/backend/node_modules
