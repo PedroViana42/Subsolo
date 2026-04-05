@@ -219,6 +219,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 placeholder="USER@DOMAIN.COM"
                 className="w-full brute-input rounded-2xl py-5 pl-14 pr-4 text-zinc-100 placeholder-zinc-900 transition-all font-mono text-[13px] border-4 border-zinc-900/50 focus:border-violet-600 focus:shadow-[4px_4px_0px_0px_rgba(124,58,237,0.2)] bg-black"
                 required
+                autoComplete="email"
               />
             </div>
           </div>
@@ -242,6 +243,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 minLength={mode === 'register' ? 8 : undefined}
                 className="w-full brute-input rounded-2xl py-5 pl-14 pr-14 text-zinc-100 placeholder-zinc-900 transition-all font-mono text-[13px] border-4 border-zinc-900/50 focus:border-violet-600 focus:shadow-[4px_4px_0px_0px_rgba(124,58,237,0.2)] bg-black"
                 required
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               />
               <button
                 type="button"
@@ -273,6 +275,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   placeholder="********"
                   className="w-full brute-input rounded-2xl py-5 pl-14 pr-14 text-zinc-100 placeholder-zinc-900 transition-all font-mono text-[13px] border-4 border-zinc-900/50 focus:border-violet-600 focus:shadow-[4px_4px_0px_0px_rgba(124,58,237,0.2)] bg-black"
                   required={mode === 'register'}
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
