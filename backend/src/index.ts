@@ -42,9 +42,6 @@ if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET não definido. Configure a variável de ambiente.');
 }
 
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
-app.use(express.json()); // Remover duplicado se houver
-
 // Redirecionamento de docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -63,7 +60,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 app.listen(Number(port), '0.0.0.0', () => {
-  console.log(`\n🚀 [SUBSOLO] Backend iniciado com sucesso!`);
+  console.log(`\n🚀 [SUBSOLO-v1.1] Backend iniciado com sucesso!`);
   console.log(`   - Porta: ${port}`);
   console.log(`   - Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`   - Whitelist CORS: ${allowedOrigins.join(', ')}`);
