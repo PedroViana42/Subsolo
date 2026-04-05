@@ -18,27 +18,28 @@ const port = process.env.PORT || 3001;
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  'https://subsolo-frontend.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5173'
+  'subsolo-frontend.vercel.app',
+  'localhost:3000',
+  'localhost:5173'
 ].filter(Boolean) as string[];
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permite requisições sem origin (como mobile apps ou curl)
     if (!origin) return callback(null, true);
     
-    const isAllowed = allowedOrigins.some(allowed => 
-      origin === allowed || origin === `${allowed}/`
-    );
+    // Verifica se a origem contém algum dos nossos domínios permitidos
+    const isAllowed = allowedOrigins.some(allowed => origin.includes(allowed));
 
     if (isAllowed) {
       callback(null, true);
     } else {
-      callback(new Error('Não permitido pelo CORS'));
+      console.warn(`[CORS Blocked]: ${origin}`);
+      callback(null, false); // Retorna falso em vez de erro para evitar quebra de cabeçalho
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
