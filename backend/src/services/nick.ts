@@ -1,4 +1,4 @@
-import { randomInt } from 'crypto';
+import { randomInt, randomBytes } from 'crypto';
 import type { Nick } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 
@@ -45,7 +45,18 @@ export async function assignNick(userId: string): Promise<Nick> {
     });
 
     if (pool.length === 0) {
-      throw new Error('Sem nicks disponíveis no momento. Tente novamente em instantes.');
+      // Fallback: Gerar um nick pseudo-aleatório se o catálogo estiver vazio
+      const fallbackSuffix = randomBytes(3).toString('hex');
+      const fallbackName = `Anon_${fallbackSuffix}`;
+      
+      return tx.nick.create({
+        data: {
+          userId,
+          name: fallbackName,
+          catalogueId: null, // Identifica que não veio do catálogo oficial
+          expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+        },
+      });
     }
 
     const entry = pool[randomInt(pool.length)];
@@ -57,7 +68,16 @@ export async function assignNick(userId: string): Promise<Nick> {
     });
 
     if (claimed.count === 0) {
-      throw new Error('Sem nicks disponíveis no momento. Tente novamente em instantes.');
+      // Race condition safety: se outro request tomou o nick no mesmo milissegundo, gera um fallback imediato
+      const fallbackSuffix = randomBytes(2).toString('hex');
+      return tx.nick.create({
+        data: {
+          userId,
+          name: `Anon_${fallbackSuffix}`,
+          catalogueId: null,
+          expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+        },
+      });
     }
 
     return tx.nick.create({
