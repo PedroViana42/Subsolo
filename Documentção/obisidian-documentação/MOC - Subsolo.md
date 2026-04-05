@@ -28,6 +28,7 @@ Bem-vindo à documentação estratégica do **Subsolo**. Esta nota serve como po
 - [[Middleware de Proteção]]: Fluxo de validação de rotas.
 - [[Rate Limiting]]: Resiliência contra ataques de força bruta.
 - [[Verificação de E-mail]]: Fluxo de confirmação via Nodemailer + Gmail.
+- [[DEPLOYMENT_STABILITY]]: Guia de resiliência, erros corrigidos e manual de novos domínios.
 
 ---
 

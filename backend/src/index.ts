@@ -25,11 +25,14 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
+    // Permite requisições sem origin (como mobile apps ou curl)
     if (!origin) return callback(null, true);
+    
     const isAllowed = 
       allowedOrigins.some(allowed => origin.includes(allowed)) || 
       origin.endsWith('.vercel.app') ||
-      origin.endsWith('.usenexora.online');
+      origin.endsWith('usenexora.online'); // Mais abrangente que .usenexora.online
+
     if (isAllowed) {
       callback(null, true);
     } else {
