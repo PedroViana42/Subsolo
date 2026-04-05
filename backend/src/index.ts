@@ -16,7 +16,30 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://subsolo-frontend.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173'
+].filter(Boolean) as string[];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (como mobile apps ou curl)
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.some(allowed => 
+      origin === allowed || origin === `${allowed}/`
+    );
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Não permitido pelo CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Redirecionamento de docs
