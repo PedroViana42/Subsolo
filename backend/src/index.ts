@@ -12,6 +12,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
+// 0. Configurar confiança no Proxy do Render (Necessário para express-rate-limit)
+app.set('trust proxy', 1);
+
 // 1. CORS deve vir ANTES de qualquer outro middleware ou rota
 const allowedOrigins = [
   process.env.FRONTEND_URL,
