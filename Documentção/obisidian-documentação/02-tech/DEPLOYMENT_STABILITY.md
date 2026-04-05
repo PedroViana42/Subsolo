@@ -11,9 +11,9 @@ Este documento registra os desafios técnicos superados durante a migração par
 - **Fallback Automático**: Implementamos em `src/services/nick.ts` uma lógica de reserva. Se o catálogo esvaziar, o sistema gera nomes como `Anon_[Hex]`. O login **nunca** mais falhará por falta de dados.
 
 ## 🌐 2. Whitelist Dinâmica de CORS
-**Problema**: O navegador bloqueava requisições vindas de subdomínios da Vercel (`*.vercel.app`).
-**Solução**:
-- Em vez de uma origem fixa, o `index.ts` agora valida o domínio base. Ele confia em qualquer subdomínio da Vercel e no domínio oficial `usenexora.online`.
+**Problema**: O navegador bloqueava requisições vindas de subdomínios da Vercel (`*.vercel.app`) ou do novo domínio oficial.
+**Solução (v1.7.2)**:
+- O `index.ts` agora confia em qualquer origem que contenha ou termine com `usenexora.online` e `vercel.app`, garantindo que o acesso via `subsolo.usenexora.online` seja imediato.
 
 ## 📦 3. Portas e Resiliência no Render
 **Problema**: O Render reportava "No open ports detected" ou falha no boot.
@@ -30,6 +30,13 @@ Este documento registra os desafios técnicos superados durante a migração par
 **Problema**: Bloqueios de "Too many requests" injustos devido ao proxy reverso do Render.
 **Solução**:
 - Adicionamos `app.set('trust proxy', 1)` no `index.ts`. O servidor agora reconhece o IP real do usuário em vez do IP do Render, permitindo que o limitador de acessos seja justo e seguro.
+
+## 🚀 6. Falha no Envio de E-mail (Gmail)
+**Problema**: E-mails de verificação não eram enviados (Timeout ou Auth Error).
+**Solução (v1.7.2)**:
+- **Transporte Seguro**: Mudamos de `service: 'gmail'` para o transporte explícito: `host: 'smtp.gmail.com'`, `port: 465` e `secure: true`.
+- **Logs de Auditoria**: Adicionamos `try/catch` com `console.error` detalhado no `email.ts` para diagnosticar falhas de senha em tempo real.
+- **Dica de Produção**: No painel do Render, a `GMAIL_APP_PASSWORD` deve ser salva **sem espaços** (ex: `jhlkgblrsuzaktek`).
 
 ---
 

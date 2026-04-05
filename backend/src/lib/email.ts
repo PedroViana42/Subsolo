@@ -2,12 +2,15 @@ import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // true para porta 465
+  port: 587,
+  secure: false, // false para usar STARTTLS na porta 587
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
   },
+  tls: {
+    rejectUnauthorized: false // Importante para alguns ambientes de nuvem
+  }
 });
 
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
@@ -15,7 +18,9 @@ export async function sendVerificationEmail(email: string, token: string): Promi
   const verifyUrl = `${frontendUrl}?verify=${token}`;
 
   try {
-    console.log(`[EMAIL]: Tentando enviar verificação para ${email}...`);
+    console.log(`[EMAIL DEBUG]: GMAIL_USER está configurado? ${!!process.env.GMAIL_USER}`);
+    console.log(`[EMAIL DEBUG]: PASSWORD está configurado? ${!!process.env.GMAIL_APP_PASSWORD}`);
+    console.log(`[EMAIL]: Tentando enviar via SMTP:587 para ${email}...`);
     await transporter.sendMail({
       from: `"Subsolo" <${process.env.GMAIL_USER}>`,
       to: email,
