@@ -18,6 +18,7 @@ app.set('trust proxy', 1);
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'subsolo-frontend.vercel.app',
+  'usenexora.online',
   'localhost:3000',
   'localhost:5173'
 ].filter(Boolean) as string[];
@@ -25,7 +26,10 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    const isAllowed = allowedOrigins.some(allowed => origin.includes(allowed)) || origin.endsWith('.vercel.app');
+    const isAllowed = 
+      allowedOrigins.some(allowed => origin.includes(allowed)) || 
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.usenexora.online');
     if (isAllowed) {
       callback(null, true);
     } else {
