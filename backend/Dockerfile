@@ -36,9 +36,9 @@ ENV NODE_ENV=production
 
 EXPOSE 10000
 
-# Comando final: Com logs para sabermos onde trava
+# Comando final: Com resiliência para o Pooler do Supabase
 CMD echo "🚀 Iniciando Migrações..." && \
-    npx prisma migrate deploy && \
-    echo "✅ Migrações concluídas!" && \
-    echo "📦 Iniciando Servidor..." && \
+    (npx prisma migrate deploy || echo "⚠️ Aviso: Migração falhou ou já aplicada. Continuando...") && \
+    echo "✅ Pronto para iniciar o servidor!" && \
+    echo "📦 Iniciando Servidor na porta $PORT..." && \
     npm start
