@@ -50,7 +50,7 @@ app.use(express.json());
 
 // Log de Auditoria Simples
 app.use((req, _res, next) => {
-  console.log(`[SUBSOLO v1.7.4] ${req.method} ${req.url} | Origin: ${req.headers.origin || 'N/A'}`);
+  console.log(`[SUBSOLO v1.8.0] ${req.method} ${req.url} | Origin: ${req.headers.origin || 'N/A'}`);
   next();
 });
 
@@ -63,7 +63,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rotas
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', version: 'v1.7.4', message: 'Subsolo Backend is secured, seeded and hardened' });
+  res.json({ status: 'ok', version: 'v1.8.0', message: 'Subsolo Backend is now using Resend API' });
 });
 
 app.use('/auth', authRouter);
@@ -80,10 +80,9 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 app.listen(Number(port), '0.0.0.0', () => {
-  console.log(`\n🚀 [SUBSOLO-v1.7.4] Servidor Seguro e Online!`);
+  console.log(`\n🚀 [SUBSOLO-v1.8.0] Servidor via API Online!`);
   console.log(`   - Porta: ${port}`);
-  console.log(`   - Ambiente: production`);
+  console.log(`   - E-mail: Resend API Activa`);
   console.log(`   - Whitelist Ativa: ${allowedOrigins.join(', ')}`);
-  console.log(`   - Domains: usenexora.online, vercel.app`);
   console.log(`   - Swagger UI: http://0.0.0.0:${port}/docs\n`);
 });

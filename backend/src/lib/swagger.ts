@@ -5,7 +5,7 @@ const options: swaggerJsdoc.Options = {
     openapi: '3.0.0',
     info: {
       title: 'Subsolo API',
-      version: '1.7.4',
+      version: '1.8.0',
       description: 'API do Subsolo — rede social universitária anônima com identidades temporais de 48h.',
     },
     servers: [

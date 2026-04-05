@@ -1,35 +1,22 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // false para usar STARTTLS na porta 587
-  family: 4, // FORÇA O USO DE IPv4 para evitar ENETUNREACH
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-  tls: {
-    rejectUnauthorized: false // Importante para alguns ambientes de nuvem
-  }
-} as any);
+// Inicializa o Resend com a API KEY
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const verifyUrl = `${frontendUrl}?verify=${token}`;
 
   try {
-    const passLen = (process.env.GMAIL_APP_PASSWORD || "").length;
-    console.log(`[EMAIL DEBUG]: GMAIL_USER está configurado? ${!!process.env.GMAIL_USER}`);
-    console.log(`[EMAIL DEBUG]: PASSWORD presente? ${!!process.env.GMAIL_APP_PASSWORD} | Length: ${passLen}`);
-    
-    if (passLen > 16) {
-      console.warn(`⚠️ [EMAIL WARNING]: Senha tem ${passLen} caracteres. Senhas do Gmail devem ter 16. Verifique se há aspas ou espaços no Render.`);
+    console.log(`[EMAIL DEBUG]: RESEND_API_KEY presente? ${!!process.env.RESEND_API_KEY}`);
+    console.log(`[EMAIL]: Tentando enviar via API (Resend) para ${email}...`);
+
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY não configurada no Render.");
     }
 
-    console.log(`[EMAIL]: Tentando enviar via SMTP:587 (IPv4) para ${email}...`);
-    await transporter.sendMail({
-      from: `"Subsolo" <${process.env.GMAIL_USER}>`,
+    const { data, error } = await resend.emails.send({
+      from: 'Subsolo <onboarding@resend.dev>', // Use este para testes ou configure seu domínio no Resend
       to: email,
       subject: 'Confirme seu e-mail — Subsolo',
       html: `
@@ -43,9 +30,14 @@ export async function sendVerificationEmail(email: string, token: string): Promi
         </div>
       `,
     });
-    console.log(`✅ [EMAIL]: Verificação enviada com sucesso para ${email}`);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    console.log(`✅ [EMAIL]: Verificação enviada via API para ${email} (ID: ${data?.id})`);
   } catch (error: any) {
-    console.error(`🔥 [EMAIL ERROR]: Falha ao enviar para ${email}:`, error);
-    throw new Error(`Falha no serviço de e-mail: ${error.message}`);
+    console.error(`🔥 [EMAIL API ERROR]: Falha ao enviar para ${email}:`, error);
+    throw new Error(`Falha no serviço de e-mail (API): ${error.message}`);
   }
 }

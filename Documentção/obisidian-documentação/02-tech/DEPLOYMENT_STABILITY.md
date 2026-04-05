@@ -32,12 +32,13 @@ Este documento registra os desafios técnicos superados durante a migração par
 - Adicionamos `app.set('trust proxy', 1)` no `index.ts`. O servidor agora reconhece o IP real do usuário em vez do IP do Render, permitindo que o limitador de acessos seja justo e seguro.
 
 ## 🚀 6. Falha no Envio de E-mail (Gmail)
-**Problema**: E-mails de verificação não eram enviados (Timeout na Porta 465 ou `ENETUNREACH` via IPv6). Além disso, o crash do processo Node.js derrubava o servidor.
-**Solução (v1.7.4)**:
+**Problema**: E-mails de verificação não eram enviados (Timeout na Porta 465 ou `ENETUNREACH` via IPv6). Além disso, falhas de tipagem no `nodemailer` bloqueavam o build (`tsc`) no Render.
+**Solução (v1.7.4.1)**:
+- **Build Destravado**: Aplicamos um cast de tipo (`as any`) na configuração do `nodemailer` para satisfazer o compilador `tsc`.
 - **Conexão IPv4 Forçada**: Adicionamos `family: 4` nas opções do `nodemailer` para evitar erros de rede IPv6 inconsistentes no Render.
 - **Porta 587 (STARTTLS)**: Uso consolidado da porta 587 (`secure: false` + `tls: { rejectUnauthorized: false }`).
 - **Blindagem Antiqueda**: Implementamos `express-async-errors`. O servidor agora captura falhas de e-mail e permanece online.
-- **Auditoria de Password**: Adicionamos logs que contam o número de caracteres da `GMAIL_APP_PASSWORD`. Isso ajuda a identificar se o usuário salvou a senha com aspas ou espaços invisíveis (o correto são exatamente 16 caracteres).
+- **Auditoria de Password**: Adicionamos logs que contam o número de caracteres da `GMAIL_APP_PASSWORD`.
 
 ---
 
