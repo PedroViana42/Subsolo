@@ -33,9 +33,12 @@ COPY --from=builder /app/backend/prisma ./prisma
 COPY --from=builder /app/backend/prisma.config.ts ./prisma.config.ts
 
 ENV NODE_ENV=production
-ENV PORT=3001
 
-EXPOSE 3001
+EXPOSE 10000
 
-# Comando final: Agora focado e direto ao ponto
-CMD npx prisma migrate deploy && npm start
+# Comando final: Com logs para sabermos onde trava
+CMD echo "🚀 Iniciando Migrações..." && \
+    npx prisma migrate deploy && \
+    echo "✅ Migrações concluídas!" && \
+    echo "📦 Iniciando Servidor..." && \
+    npm start
