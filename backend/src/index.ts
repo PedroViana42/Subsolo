@@ -14,21 +14,37 @@ const port = process.env.PORT || 3001;
 // 0. Configurar confiança no Proxy do Render
 app.set('trust proxy', 1);
 
-// 1. CORS Totalmente Aberto (Para Debug e Estabilização)
+// 1. CORS Seguro (v1.5)
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'subsolo-frontend.vercel.app',
+  'localhost:3000',
+  'localhost:5173'
+].filter(Boolean) as string[];
+
 app.use(cors({
-  origin: true, // Echoes the request origin back to the client
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.some(allowed => origin.includes(allowed)) || origin.endsWith('.vercel.app');
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS Blocked]: ${origin}`);
+      callback(null, false);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Log de Auditoria
+app.use(express.json());
+
+// Log de Auditoria Simples
 app.use((req, _res, next) => {
-  console.log(`[SUBSOLO v1.4] ${new Date().toISOString()} | ${req.method} ${req.url} | Origin: ${req.headers.origin || 'N/A'}`);
+  console.log(`[SUBSOLO v1.5] ${req.method} ${req.url} | Origin: ${req.headers.origin || 'N/A'}`);
   next();
 });
-
-app.use(express.json());
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET não definido. Configure a variável de ambiente.');
@@ -39,21 +55,26 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rotas
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', version: 'v1.4', message: 'Subsolo Backend is now wide open for testing' });
+  res.json({ status: 'ok', version: 'v1.5', message: 'Subsolo Backend is secured and seeded' });
 });
 
 app.use('/auth', authRouter);
 app.use('/posts', postsRouter);
 
-// Handler global de erros
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('🔥 [ERROR]:', err);
-  res.status(500).json({ error: 'Erro interno do servidor.', details: err.message });
+// Handler global de erros - CRITICAL: IMPEDE O CRASH DO NODE
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('🔥 [INTERNAL ERROR]:', err);
+  const status = err.status || 500;
+  res.status(status).json({ 
+    error: 'Ocorreu um erro interno no servidor.',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Tente novamente em instantes.'
+  });
 });
 
 app.listen(Number(port), '0.0.0.0', () => {
-  console.log(`\n🚀 [SUBSOLO-v1.4] Servidor em teste de estresse!`);
+  console.log(`\n🚀 [SUBSOLO-v1.5] Servidor Seguro e Online!`);
   console.log(`   - Porta: ${port}`);
-  console.log(`   - CORS: Totalmente Aberto (origin: true)`);
+  console.log(`   - Ambiente: production`);
+  console.log(`   - Whitelist Ativa: ${allowedOrigins.join(', ')}`);
   console.log(`   - Swagger UI: http://0.0.0.0:${port}/docs\n`);
 });

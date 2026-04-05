@@ -128,23 +128,33 @@ router.post('/login', loginLimiter, async (req, res) => {
     return;
   }
 
-  const nick = await assignNick(user.id);
+  try {
+    const nick = await assignNick(user.id);
 
-  const token = jwt.sign(
-    { userId: user.id, nickId: nick.id },
-    process.env.JWT_SECRET!,
-    { expiresIn: '48h' },
-  );
+    const token = jwt.sign(
+      { userId: user.id, nickId: nick.id },
+      process.env.JWT_SECRET!,
+      { expiresIn: '48h' },
+    );
 
-  res.json({
-    token,
-    nick: {
-      name: nick.name,
-      expiresAt: nick.expiresAt,
-      score: nick.score,
-      aura: nick.aura,
-    },
-  });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        nick: {
+          id: nick.id,
+          name: nick.name,
+        },
+      },
+    });
+  } catch (error: any) {
+    console.error('🔥 [AUTH ERROR]:', error);
+    res.status(500).json({ 
+      error: 'Ocorreu um erro ao processar sua identidade. Tente novamente em alguns instantes.',
+      message: error.message 
+    });
+  }
 });
 
 /**
