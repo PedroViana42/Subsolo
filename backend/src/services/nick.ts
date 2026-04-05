@@ -12,8 +12,8 @@ export async function assignNick(userId: string): Promise<Nick> {
   });
   if (activeNick) return activeNick;
 
-  // 2. Tudo dentro de uma transação para evitar race condition
-  return prisma.$transaction(async (tx) => {
+  // 2. Tudo dentro de uma transação para evitar race condition (usando any para evitar erro de inferência do Prisma)
+  return prisma.$transaction(async (tx: any) => {
     // Reativa entradas do catálogo cujos nicks já expiraram
     const stillActiveIds = await tx.nick.findMany({
       where: { expiresAt: { gt: now }, catalogueId: { not: null } },
@@ -24,7 +24,7 @@ export async function assignNick(userId: string): Promise<Nick> {
     await tx.nickCatalogue.updateMany({
       where: {
         isActive: false,
-        id: { notIn: stillActiveIds.map((n) => n.catalogueId!) },
+        id: { notIn: stillActiveIds.map((n: { catalogueId: string | null }) => n.catalogueId!) },
       },
       data: { isActive: true },
     });

@@ -8,7 +8,12 @@ const options: swaggerJsdoc.Options = {
       version: '1.0.0',
       description: 'API do Subsolo — rede social universitária anônima com identidades temporais de 48h.',
     },
-    servers: [{ url: 'http://localhost:3001', description: 'Desenvolvimento' }],
+    servers: [
+      { 
+        url: process.env.API_URL || 'http://localhost:3001', 
+        description: 'Servidor API' 
+      }
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
