@@ -139,13 +139,12 @@ router.post('/login', loginLimiter, async (req, res) => {
 
     res.json({
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        nick: {
-          id: nick.id,
-          name: nick.name,
-        },
+      nick: {
+        id: nick.id,
+        name: nick.name,
+        expiresAt: nick.expiresAt,
+        score: nick.score,
+        aura: nick.aura,
       },
     });
   } catch (error: any) {
