@@ -1,0 +1,19 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Copia os arquivos de configuração da raiz para instalar dependências do monorepo
+COPY package*.json ./
+COPY frontend/package*.json ./frontend/
+
+# Instala todas as dependências
+RUN npm install
+
+# Copia o restante do código do frontend
+COPY frontend ./frontend
+
+# Expõe a porta do frontend (Vite)
+EXPOSE 3000
+
+# Execução do Vite com o comando dev do monorepo
+CMD ["npm", "run", "dev", "-w", "frontend"]
