@@ -32,7 +32,7 @@ app.use(cors({
     const isAllowed = 
       allowedOrigins.some(allowed => origin.includes(allowed)) || 
       origin.endsWith('.vercel.app') ||
-      origin.endsWith('usenexora.online'); // Mais abrangente que .usenexora.online
+      origin.endsWith('usenexora.online'); // Domínio oficial nexora
 
     if (isAllowed) {
       callback(null, true);
@@ -43,14 +43,14 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(express.json());
 
 // Log de Auditoria Simples
 app.use((req, _res, next) => {
-  console.log(`[SUBSOLO v1.5] ${req.method} ${req.url} | Origin: ${req.headers.origin || 'N/A'}`);
+  console.log(`[SUBSOLO v1.7.4] ${req.method} ${req.url} | Origin: ${req.headers.origin || 'N/A'}`);
   next();
 });
 
@@ -63,7 +63,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rotas
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', version: 'v1.5', message: 'Subsolo Backend is secured and seeded' });
+  res.json({ status: 'ok', version: 'v1.7.4', message: 'Subsolo Backend is secured, seeded and hardened' });
 });
 
 app.use('/auth', authRouter);
@@ -80,9 +80,10 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 app.listen(Number(port), '0.0.0.0', () => {
-  console.log(`\n🚀 [SUBSOLO-v1.5] Servidor Seguro e Online!`);
+  console.log(`\n🚀 [SUBSOLO-v1.7.4] Servidor Seguro e Online!`);
   console.log(`   - Porta: ${port}`);
   console.log(`   - Ambiente: production`);
   console.log(`   - Whitelist Ativa: ${allowedOrigins.join(', ')}`);
+  console.log(`   - Domains: usenexora.online, vercel.app`);
   console.log(`   - Swagger UI: http://0.0.0.0:${port}/docs\n`);
 });

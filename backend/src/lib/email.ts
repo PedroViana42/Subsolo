@@ -4,6 +4,7 @@ const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
   secure: false, // false para usar STARTTLS na porta 587
+  family: 4, // FORÇA O USO DE IPv4 para evitar ENETUNREACH
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
@@ -18,9 +19,15 @@ export async function sendVerificationEmail(email: string, token: string): Promi
   const verifyUrl = `${frontendUrl}?verify=${token}`;
 
   try {
+    const passLen = (process.env.GMAIL_APP_PASSWORD || "").length;
     console.log(`[EMAIL DEBUG]: GMAIL_USER está configurado? ${!!process.env.GMAIL_USER}`);
-    console.log(`[EMAIL DEBUG]: PASSWORD está configurado? ${!!process.env.GMAIL_APP_PASSWORD}`);
-    console.log(`[EMAIL]: Tentando enviar via SMTP:587 para ${email}...`);
+    console.log(`[EMAIL DEBUG]: PASSWORD presente? ${!!process.env.GMAIL_APP_PASSWORD} | Length: ${passLen}`);
+    
+    if (passLen > 16) {
+      console.warn(`⚠️ [EMAIL WARNING]: Senha tem ${passLen} caracteres. Senhas do Gmail devem ter 16. Verifique se há aspas ou espaços no Render.`);
+    }
+
+    console.log(`[EMAIL]: Tentando enviar via SMTP:587 (IPv4) para ${email}...`);
     await transporter.sendMail({
       from: `"Subsolo" <${process.env.GMAIL_USER}>`,
       to: email,

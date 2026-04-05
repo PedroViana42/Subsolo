@@ -32,11 +32,12 @@ Este documento registra os desafios técnicos superados durante a migração par
 - Adicionamos `app.set('trust proxy', 1)` no `index.ts`. O servidor agora reconhece o IP real do usuário em vez do IP do Render, permitindo que o limitador de acessos seja justo e seguro.
 
 ## 🚀 6. Falha no Envio de E-mail (Gmail)
-**Problema**: E-mails de verificação não eram enviados (Timeout ou Auth Error).
-**Solução (v1.7.2)**:
-- **Transporte Seguro**: Mudamos de `service: 'gmail'` para o transporte explícito: `host: 'smtp.gmail.com'`, `port: 465` e `secure: true`.
-- **Logs de Auditoria**: Adicionamos `try/catch` com `console.error` detalhado no `email.ts` para diagnosticar falhas de senha em tempo real.
-- **Dica de Produção**: No painel do Render, a `GMAIL_APP_PASSWORD` deve ser salva **sem espaços** (ex: `jhlkgblrsuzaktek`).
+**Problema**: E-mails de verificação não eram enviados (Timeout na Porta 465). Além disso, a falha de e-mail derrubava o servidor Express inteiro (Crash).
+**Solução (v1.7.3)**:
+- **Porta 587 (STARTTLS)**: Mudamos para a porta 587 (`secure: false` + `tls: { rejectUnauthorized: false }`), que é a mais aceita por firewalls de nuvem como o Render.
+- **Blindagem Antiqueda**: Instalamos e integramos o `express-async-errors` no `index.ts`. Agora, se o e-mail falhar, o servidor captura o erro e **continua vivo**.
+- **Logs de Auditoria**: Adicionamos logs que confirmam se as chaves do `process.env` estão configuradas antes de tentar o envio.
+- **Dica de Produção**: Use a `GMAIL_APP_PASSWORD` **sem espaços** no painel do Render.
 
 ---
 
