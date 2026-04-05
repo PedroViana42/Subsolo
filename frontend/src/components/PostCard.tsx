@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flag, MessageCircle, CheckCircle2, XCircle, Send, Bot } from 'lucide-react';
+import { Flag, MessageCircle, CheckCircle2, XCircle, Send, Bot, Trophy } from 'lucide-react';
 import { Post, UserIdentity } from '../types';
 import { BadgeList } from './BadgeList';
 import { AuraWrapper } from './AuraWrapper';
@@ -9,6 +9,7 @@ interface PostCardProps {
   key?: string;
   post: Post;
   identity: UserIdentity;
+  isRelic?: boolean;
   onVote: (postId: string, vote: 'fact' | 'fic') => void;
   onComment: (postId: string, content: string) => Promise<void>;
   onReport: (postId: string) => void;
@@ -35,7 +36,7 @@ const formatTimeAgo = (date: Date) => {
   return 'agora mesmo';
 };
 
-export function PostCard({ post, identity, onVote, onComment, onReport }: PostCardProps) {
+export function PostCard({ post, identity, isRelic, onVote, onComment, onReport }: PostCardProps) {
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [commentContent, setCommentContent] = useState('');
   const [isCommenting, setIsCommenting] = useState(false);
@@ -57,38 +58,51 @@ export function PostCard({ post, identity, onVote, onComment, onReport }: PostCa
   };
 
   return (
-    <div className={`brute-card rounded-2xl p-6 transition-all relative overflow-hidden group/card ${post.isBot ? 'neon-border-violet' : ''}`}>
-      {post.isBot && (
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-600 via-violet-400 to-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
+    <div className={`brute-card brute-card-hover rounded-2xl p-4 sm:p-6 relative overflow-hidden group/card transition-all duration-500 ${
+      isRelic 
+        ? 'border-violet-500 shadow-[8px_8px_0px_0px_#7c3aed] sm:shadow-[15px_15px_0px_0px_#7c3aed] bg-gradient-to-br from-[#0a0a0a] to-violet-950/20' 
+        : post.isBot ? 'neon-border-violet' : ''
+    }`}>
+      {isRelic && (
+        <div className="absolute top-0 right-0 p-2 z-20">
+          <div className="bg-violet-600 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl rounded-tr-sm border-l-2 border-b-2 border-violet-400 font-mono shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase tracking-[0.2em] flex items-center gap-1.5 animate-pulse">
+            <Trophy size={10} strokeWidth={4} />
+            Relíquia
+          </div>
+        </div>
+      )}
+      {post.isBot && !isRelic && (
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
       )}
       <div className="flex justify-between items-start mb-6">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-3">
-            <AuraWrapper honestyScore={post.honestyScore} isBot={post.isBot} className={`text-[14px] font-mono font-bold flex items-center gap-2 ${post.isBot ? 'text-violet-400 drop-shadow-[0_0_8px_rgba(124,58,237,0.6)]' : 'text-zinc-200'}`}>
-              {post.isBot && <Bot size={16} />}
-              {post.authorNickname} {post.honestyScore}
+            <AuraWrapper honestyScore={post.honestyScore} isBot={post.isBot} className={`text-[13px] font-mono font-black flex items-center gap-2 tracking-tight ${post.isBot ? 'text-violet-400 drop-shadow-[0_0_8px_rgba(124,58,237,0.6)]' : 'text-zinc-100'}`}>
+              {post.isBot && <Bot size={14} strokeWidth={3} />}
+              {post.authorNickname.toUpperCase()}
+              <span className="ml-0.5">{post.honestyScore}</span>
             </AuraWrapper>
-            <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 text-[10px] font-mono font-black uppercase tracking-tighter border border-zinc-700">
+            <span className="px-2 py-0.5 rounded bg-black text-zinc-500 text-[9px] font-mono font-black uppercase tracking-widest border border-zinc-800">
               {post.tag}
             </span>
           </div>
           <div className="flex items-center gap-3">
             <BadgeList badgeIds={post.authorBadges} />
-            <span className="text-[10px] text-zinc-600 font-mono font-bold uppercase tracking-tight opacity-80">
+            <span className="text-[10px] text-zinc-600 font-mono font-black uppercase tracking-[0.15em]">
               {formatTimeAgo(post.createdAt)}
             </span>
           </div>
         </div>
         <button
           onClick={() => onReport(post.id)}
-          className="text-zinc-600 hover:text-rose-500 transition-all p-2 rounded-xl hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20"
+          className="text-zinc-700 hover:text-rose-500 transition-all p-2 rounded-xl hover:bg-rose-500/10 border border-transparent hover:border-rose-900 active:scale-90"
           title="Denunciar"
         >
-          <Flag size={18} />
+          <Flag size={16} />
         </button>
       </div>
       
-      <p className="text-zinc-100 text-base sm:text-lg leading-relaxed mb-8 whitespace-pre-wrap break-words font-sans selection:bg-violet-500/30">
+      <p className="text-zinc-100 text-base sm:text-lg leading-relaxed mb-8 whitespace-pre-wrap break-words font-sans font-medium selection:bg-violet-500/30">
         {post.content}
       </p>
       
@@ -97,55 +111,57 @@ export function PostCard({ post, identity, onVote, onComment, onReport }: PostCa
         <div className="flex items-center justify-between mb-4 gap-3">
           <button
             onClick={() => onVote(post.id, 'fact')}
-            className={`flex-1 flex items-center justify-center gap-2.5 py-3 rounded-xl font-mono font-black transition-all active:translate-x-[1px] active:translate-y-[1px] text-[10px] uppercase tracking-wider border-2 ${
+            className={`flex-1 min-w-[100px] sm:min-w-[120px] brute-card bg-zinc-900 border-2 border-emerald-950/30 hover:border-emerald-500/50 hover:bg-emerald-950/20 px-3 py-3 sm:px-6 sm:py-4 rounded-xl flex items-center justify-center gap-2 sm:gap-3 transition-all group active:translate-x-[1px] active:translate-y-[1px] text-[10px] uppercase tracking-widest border-2 ${
               post.userVote === 'fact'
-                ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500 shadow-[2px_2px_0px_0px_rgba(16,185,129,0.3)]'
-                : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-emerald-500/40 hover:text-emerald-400'
+                ? 'bg-emerald-600 text-white border-emerald-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                : 'bg-zinc-800 text-zinc-500 border-zinc-700 hover:border-emerald-500/50 hover:text-emerald-400'
             }`}
           >
-            <CheckCircle2 size={16} />
+            <CheckCircle2 size={16} strokeWidth={3} />
             <span>Fato • {post.factCount}</span>
           </button>
           
           <button
             onClick={() => onVote(post.id, 'fic')}
-            className={`flex-1 flex items-center justify-center gap-2.5 py-3 rounded-xl font-mono font-black transition-all active:translate-x-[1px] active:translate-y-[1px] text-[10px] uppercase tracking-wider border-2 ${
+            className={`flex-1 min-w-[100px] sm:min-w-[120px] brute-card bg-zinc-900 border-2 border-rose-950/30 hover:border-rose-500/50 hover:bg-rose-950/20 px-3 py-3 sm:px-6 sm:py-4 rounded-xl flex items-center justify-center gap-2 sm:gap-3 transition-all group active:translate-x-[1px] active:translate-y-[1px] text-[10px] uppercase tracking-widest border-2 ${
               post.userVote === 'fic'
-                ? 'bg-rose-950/40 text-rose-400 border-rose-500 shadow-[2px_2px_0px_0px_rgba(244,63,94,0.3)]'
-                : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-rose-500/40 hover:text-rose-400'
+                ? 'bg-rose-600 text-white border-rose-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                : 'bg-zinc-800 text-zinc-500 border-zinc-700 hover:border-rose-500/50 hover:text-rose-400'
             }`}
           >
-            <XCircle size={16} />
+            <XCircle size={16} strokeWidth={3} />
             <span>Fic • {post.ficCount}</span>
           </button>
         </div>
         
         {/* Progress Bar */}
-        <div className="h-1.5 w-full bg-black rounded-full overflow-hidden flex border border-zinc-800 relative">
+        <div className="h-1.5 w-full bg-black rounded-full overflow-hidden flex border border-zinc-800">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${factPercent}%` }}
             transition={{ duration: 0.8, ease: "circOut" }}
-            className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+            className="h-full bg-emerald-500"
           />
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${ficPercent}%` }}
             transition={{ duration: 0.8, ease: "circOut" }}
-            className="h-full bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)]"
+            className="h-full bg-rose-500"
           />
         </div>
       </div>
 
       {/* Actions Footer */}
-      <div className="flex items-center pt-4 border-t border-zinc-800">
+      <div className="flex items-center pt-4 border-t border-zinc-800/50">
         <button
           onClick={() => setIsCommentsOpen(!isCommentsOpen)}
-          className={`flex items-center gap-3 text-[10px] font-mono font-black uppercase tracking-widest transition-all py-1.5 px-3 rounded-lg ${
-            isCommentsOpen ? 'bg-violet-950/40 text-violet-400 border border-violet-500/30' : 'text-zinc-600 hover:text-violet-400 hover:bg-zinc-800'
+          className={`flex items-center gap-3 text-[10px] font-mono font-black uppercase tracking-[0.2em] transition-all py-2 px-4 rounded-xl border-2 ${
+            isCommentsOpen 
+              ? 'bg-violet-950/40 text-violet-400 border-violet-500 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+              : 'text-zinc-600 hover:text-zinc-300 border-zinc-800 hover:border-zinc-700'
           }`}
         >
-          <MessageCircle size={16} className={isCommentsOpen ? 'animate-pulse' : ''} />
+          <MessageCircle size={14} strokeWidth={3} />
           {post.comments.length} {post.comments.length === 1 ? 'Comentário' : 'Comentários'}
         </button>
       </div>
@@ -159,61 +175,61 @@ export function PostCard({ post, identity, onVote, onComment, onReport }: PostCa
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-zinc-900">
-              <form onSubmit={handleCommentSubmit} className="flex gap-2 mb-6">
+            <div className="mt-6 pt-6 border-t border-zinc-800/30">
+              <form onSubmit={handleCommentSubmit} className="flex gap-3 mb-6">
                 <textarea
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
                   placeholder="Contribua com a treta..."
-                  className="flex-1 bg-black border border-zinc-800 rounded-xl p-4 text-sm text-zinc-200 placeholder-zinc-800 focus:outline-none focus:border-violet-500/50 resize-none font-sans transition-all min-h-[50px]"
+                  className="flex-1 brute-input rounded-xl p-4 text-sm resize-none min-h-[52px]"
                   rows={1}
                 />
                 <button
                   type="submit"
                   disabled={!commentContent.trim() || isCommenting}
-                  className="bg-violet-800 hover:bg-violet-700 disabled:bg-zinc-900 disabled:text-zinc-700 text-white w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-95 disabled:active:scale-100 flex-shrink-0 border border-violet-600"
+                  className="bg-violet-700 hover:bg-violet-600 disabled:opacity-30 text-white w-12 h-12 flex items-center justify-center rounded-xl transition-all border-2 border-violet-500 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                 >
                   {isCommenting ? (
                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <Send size={18} />
+                    <Send size={18} strokeWidth={3} />
                   )}
                 </button>
               </form>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {post.comments.map((comment, idx) => (
                   <motion.div 
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
                     key={comment.id} 
-                    className="flex flex-col gap-3 bg-zinc-900/40 p-5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
+                    className="flex flex-col gap-3 bg-zinc-900 border-2 border-zinc-800 p-5 rounded-2xl"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <AuraWrapper honestyScore={comment.honestyScore} isBot={comment.isBot} className={`text-sm font-bold flex items-center gap-2 ${comment.isBot ? 'text-violet-400' : 'text-zinc-300'}`}>
-                          {comment.isBot && <Bot size={14} />}
+                        <AuraWrapper honestyScore={comment.honestyScore} isBot={comment.isBot} className={`text-[12px] font-mono font-black flex items-center gap-2 uppercase ${comment.isBot ? 'text-violet-400' : 'text-zinc-200'}`}>
+                          {comment.isBot && <Bot size={12} strokeWidth={3} />}
                           {comment.authorNickname} {comment.honestyScore}
                         </AuraWrapper>
                         {comment.isOp && (
-                          <span className="px-2 py-0.5 rounded-md bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest shadow-lg">
+                          <span className="px-2 py-0.5 rounded-lg bg-violet-600 text-white text-[8px] font-black uppercase tracking-widest border border-violet-400 shadow-sm">
                             OP
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">
+                      <span className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">
                         {formatTimeAgo(comment.createdAt)}
                       </span>
                     </div>
-                    <p className="text-[15px] text-zinc-400 leading-relaxed">
+                    <p className="text-[14px] text-zinc-400 leading-relaxed font-sans font-medium">
                       {comment.content}
                     </p>
                   </motion.div>
                 ))}
                 {post.comments.length === 0 && (
-                  <div className="text-center py-10 glass-card rounded-2xl border border-dashed border-white/5">
-                    <p className="text-sm text-zinc-600 font-bold uppercase tracking-widest">
+                  <div className="text-center py-12 bg-zinc-900/50 rounded-2xl border-2 border-dashed border-zinc-800">
+                    <p className="text-[10px] text-zinc-700 font-black uppercase tracking-[0.3em]">
                       Silêncio ensurdecedor...
                     </p>
                   </div>

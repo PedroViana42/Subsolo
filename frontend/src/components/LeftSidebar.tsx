@@ -20,40 +20,40 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
   return (
     <aside className="w-full xl:w-72 flex-shrink-0 space-y-4">
       {/* Identity Profile Section */}
-      <div className="brute-card rounded-2xl p-6 relative overflow-hidden group transition-all">
-        <div className="absolute -top-4 -right-4 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 group-hover:scale-110 group-hover:-rotate-12 pointer-events-none">
+      <div className="brute-card brute-card-hover rounded-2xl p-6 relative overflow-hidden group transition-all">
+        <div className="absolute -top-4 -right-4 p-8 opacity-[0.02] group-hover:opacity-[0.05] transition-all duration-700 group-hover:scale-110 group-hover:-rotate-12 pointer-events-none">
           <Ghost size={140} />
         </div>
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-400 border border-violet-500/20 shadow-inner">
-              <ShieldCheck size={20} />
+            <div className="w-9 h-9 rounded-xl bg-black flex items-center justify-center text-violet-500 border-2 border-zinc-900 shadow-inner">
+              <ShieldCheck size={18} strokeWidth={3} />
             </div>
-            <h2 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] font-mono opacity-60">Identidade</h2>
+            <h2 className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] font-mono">Identidade</h2>
           </div>
 
           <div className="space-y-4">
-            <div className="text-xl font-black text-zinc-100 leading-tight tracking-tighter break-words font-mono uppercase">
+            <div className="text-lg font-black text-zinc-100 leading-tight tracking-tight break-words font-mono uppercase">
               {identity.nickname}
-              <span className="ml-2 text-violet-500 text-lg">
+              <span className="ml-2 text-violet-500">
                 {identity.honestyScore}
               </span>
             </div>
             
-            <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-bold uppercase tracking-widest bg-black py-1.5 px-3 rounded-lg border border-zinc-800">
-              <Clock size={12} className="text-violet-500" />
-              <span>Expira em <span className="text-zinc-200 font-mono font-black">{getHoursRemaining()}h</span></span>
+            <div className="flex items-center gap-2 text-[9px] text-zinc-500 font-black uppercase tracking-widest bg-black py-2 px-4 rounded-xl border-2 border-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <Clock size={12} strokeWidth={3} className="text-violet-500" />
+              <span>Expira em <span className="text-zinc-200">{getHoursRemaining()}h</span></span>
             </div>
           </div>
 
           <div className="mt-8">
-            <div className="h-1.5 w-full bg-zinc-800/30 rounded-full overflow-hidden border border-white/5 p-0">
+            <div className="h-2 w-full bg-black rounded-full overflow-hidden border-2 border-zinc-900 p-0.5">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
                 transition={{ duration: 1.5, ease: "circOut" }}
-                className="h-full bg-gradient-to-r from-violet-600/60 via-violet-500 to-violet-600/60 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+                className="h-full bg-violet-600 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.3)]"
               />
             </div>
           </div>
@@ -61,8 +61,8 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
       </div>
 
       {/* Navigation Menu Section */}
-      <nav className="brute-card rounded-2xl p-2">
-        <ul className="space-y-1.5">
+      <nav className="brute-card rounded-2xl p-3 border-2 border-zinc-900">
+        <ul className="space-y-2">
           {[
             { id: 'feed', label: 'Feed Principal', icon: Flame },
             { id: 'hall', label: 'Mural de Relíquias', icon: Trophy },
@@ -74,13 +74,13 @@ export function LeftSidebar({ identity, currentView, onViewChange }: LeftSidebar
               <li key={item.id}>
                 <button 
                   onClick={() => onViewChange(item.id as View)}
-                  className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-xl font-mono font-black text-[10px] uppercase tracking-widest transition-all border-2 ${
+                  className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl font-mono font-black text-[10px] uppercase tracking-[0.2em] transition-all border-2 active:scale-95 ${
                     isActive
-                      ? 'bg-violet-950/40 text-violet-400 border-violet-500 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                      : 'text-zinc-600 hover:text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                      ? 'bg-violet-600 text-white border-violet-400 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] -translate-x-[1px] -translate-y-[1px]'
+                      : 'bg-zinc-900/50 text-zinc-600 border-zinc-800 hover:text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900'
                   }`}
                 >
-                  <Icon size={16} className={`${isActive ? 'text-violet-400' : 'text-zinc-700 group-hover:text-zinc-400'} transition-colors duration-300`} />
+                  <Icon size={16} strokeWidth={3} className={`${isActive ? 'text-white' : 'text-zinc-700 group-hover:text-zinc-500'} transition-colors duration-300`} />
                   {item.label}
                 </button>
               </li>

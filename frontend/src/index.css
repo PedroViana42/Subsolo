@@ -15,16 +15,16 @@ body {
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-zinc-950/80 backdrop-blur-md border border-white/5 shadow-[0_4px_24px_0_rgba(0,0,0,0.5)];
+  .brute-card {
+    @apply bg-zinc-900 border-2 border-zinc-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-200;
   }
 
-  .brute-card {
-    @apply bg-zinc-900 border-2 border-zinc-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200;
+  .brute-card-hover {
+    @apply hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px];
   }
 
   .brute-input {
-    @apply bg-black border-2 border-zinc-800 text-zinc-100 placeholder-zinc-700 focus:border-violet-500 focus:ring-0 transition-all duration-200 font-mono;
+    @apply bg-black border-2 border-zinc-800 text-zinc-100 placeholder-zinc-700 outline-hidden transition-all duration-200 font-mono focus:border-violet-500 focus:shadow-[2px_2px_0px_0px_rgba(124,58,237,0.5)];
   }
 
   .neon-border-violet {
@@ -33,6 +33,17 @@ body {
 
   .neon-glow-violet {
     @apply shadow-[0_0_20px_rgba(124,58,237,0.4)];
+  }
+}
+
+@layer base {
+  :focus-visible {
+    @apply outline-none ring-2 ring-violet-500 ring-offset-2 ring-offset-black transition-shadow;
+  }
+
+  /* Melhoria de contraste para textos secundários */
+  .text-secondary {
+    @apply text-zinc-400 font-medium;
   }
 }
 
