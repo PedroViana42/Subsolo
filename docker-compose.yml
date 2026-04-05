@@ -1,40 +1,37 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:16-alpine
     container_name: subsolo-db
+    restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-subsolo}
     ports:
-      - "5434:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - subsolo-network
+      - "5434:5432" # Expõe na 5434 para não conflitar com outros bancos locais
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-subsolo}"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - subsolo-network
 
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
-    container_name: subsolo-backend
-    environment:
-      DATABASE_URL: postgresql://user:password@db:5432/subsolo?schema=public
-      PORT: 3001
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required. Define it in your .env file.}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-      GMAIL_USER: ${GMAIL_USER:-}
-      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD:-}
+      dockerfile: backend/Dockerfile.dev
+    container_name: subsolo-backend-dev
+    command: npm run dev -w backend
     ports:
       - "3001:3001"
-    command: sh -c "cd /app/backend && npx prisma db push && npx tsx prisma/seed.ts && npm run dev"
+    env_file:
+      - .env
     volumes:
-      - ./backend:/app/backend
+      - .:/app
+      - /app/node_modules # Evita conflito entre node_modules do Windows e do Linux
       - /app/backend/node_modules
     depends_on:
       db:
@@ -42,36 +39,23 @@ services:
     networks:
       - subsolo-network
 
-  prisma-studio:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: subsolo-prisma-studio
-    environment:
-      DATABASE_URL: postgresql://user:password@db:5432/subsolo?schema=public
-    command: npx prisma studio --port 5555 --browser none
-    ports:
-      - "5555:5555"
-    depends_on:
-      - db
-      - backend
-    networks:
-      - subsolo-network
-
   frontend:
     build:
       context: .
-      dockerfile: frontend/Dockerfile
-    container_name: subsolo-frontend
-    environment:
-      VITE_API_URL: http://localhost:3001
+      dockerfile: frontend/Dockerfile.dev
+    container_name: subsolo-frontend-dev
+    command: npm run dev -w frontend
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     volumes:
-      - ./frontend:/app/frontend
+      - .:/app
+      - /app/node_modules
       - /app/frontend/node_modules
     depends_on:
-      - backend
+      backend:
+        condition: service_started
     networks:
       - subsolo-network
 
@@ -80,4 +64,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  pgdata:

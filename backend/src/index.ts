@@ -9,15 +9,41 @@ import postsRouter from './routes/posts.js';
 
 dotenv.config();
 
+const app = express();
+const port = process.env.PORT || 3001;
+
+// 1. CORS deve vir ANTES de qualquer outro middleware ou rota
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'subsolo-frontend.vercel.app',
+  'localhost:3000',
+  'localhost:5173'
+].filter(Boolean) as string[];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.some(allowed => origin.includes(allowed));
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS Blocked]: ${origin}`);
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
+
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET não definido. Configure a variável de ambiente.');
 }
 
-const app = express();
-const port = process.env.PORT || 3001;
-
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
-app.use(express.json());
+app.use(express.json()); // Remover duplicado se houver
 
 // Redirecionamento de docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -37,6 +63,9 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 app.listen(Number(port), '0.0.0.0', () => {
-  console.log(`Backend rodando em http://0.0.0.0:${port}`);
-  console.log(`Swagger UI em    http://0.0.0.0:${port}/docs`);
+  console.log(`\n🚀 [SUBSOLO] Backend iniciado com sucesso!`);
+  console.log(`   - Porta: ${port}`);
+  console.log(`   - Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`   - Whitelist CORS: ${allowedOrigins.join(', ')}`);
+  console.log(`   - Swagger UI: http://0.0.0.0:${port}/docs\n`);
 });
