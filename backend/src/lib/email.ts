@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false // Importante para alguns ambientes de nuvem
   }
-});
+} as any);
 
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';

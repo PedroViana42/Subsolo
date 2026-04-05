@@ -32,12 +32,12 @@ Este documento registra os desafios técnicos superados durante a migração par
 - Adicionamos `app.set('trust proxy', 1)` no `index.ts`. O servidor agora reconhece o IP real do usuário em vez do IP do Render, permitindo que o limitador de acessos seja justo e seguro.
 
 ## 🚀 6. Falha no Envio de E-mail (Gmail)
-**Problema**: E-mails de verificação não eram enviados (Timeout na Porta 465). Além disso, a falha de e-mail derrubava o servidor Express inteiro (Crash).
-**Solução (v1.7.3)**:
-- **Porta 587 (STARTTLS)**: Mudamos para a porta 587 (`secure: false` + `tls: { rejectUnauthorized: false }`), que é a mais aceita por firewalls de nuvem como o Render.
-- **Blindagem Antiqueda**: Instalamos e integramos o `express-async-errors` no `index.ts`. Agora, se o e-mail falhar, o servidor captura o erro e **continua vivo**.
-- **Logs de Auditoria**: Adicionamos logs que confirmam se as chaves do `process.env` estão configuradas antes de tentar o envio.
-- **Dica de Produção**: Use a `GMAIL_APP_PASSWORD` **sem espaços** no painel do Render.
+**Problema**: E-mails de verificação não eram enviados (Timeout na Porta 465 ou `ENETUNREACH` via IPv6). Além disso, o crash do processo Node.js derrubava o servidor.
+**Solução (v1.7.4)**:
+- **Conexão IPv4 Forçada**: Adicionamos `family: 4` nas opções do `nodemailer` para evitar erros de rede IPv6 inconsistentes no Render.
+- **Porta 587 (STARTTLS)**: Uso consolidado da porta 587 (`secure: false` + `tls: { rejectUnauthorized: false }`).
+- **Blindagem Antiqueda**: Implementamos `express-async-errors`. O servidor agora captura falhas de e-mail e permanece online.
+- **Auditoria de Password**: Adicionamos logs que contam o número de caracteres da `GMAIL_APP_PASSWORD`. Isso ajuda a identificar se o usuário salvou a senha com aspas ou espaços invisíveis (o correto são exatamente 16 caracteres).
 
 ---
 
