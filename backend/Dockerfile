@@ -36,4 +36,4 @@ ENV PORT=3001
 EXPOSE 3001
 
 # Comando final: Migra o banco e inicia o servidor
-CMD npx prisma migrate deploy && npm start -w backend
+CMD npx prisma migrate deploy --schema backend/prisma/schema.prisma && npm start -w backend
