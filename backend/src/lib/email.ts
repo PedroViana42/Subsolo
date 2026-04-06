@@ -3,6 +3,9 @@ import { Resend } from 'resend';
 // Inicializa o Resend com a API KEY
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+/**
+ * Envia e-mail de verificação usando a API do Resend (Porta 443 / HTTPS)
+ */
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const verifyUrl = `${frontendUrl}?verify=${token}`;
@@ -16,7 +19,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'Subsolo <onboarding@resend.dev>', // Use este para testes ou configure seu domínio no Resend
+      from: 'Subsolo <noreply@usenexora.online>', // Agora usando o domínio verificado
       to: email,
       subject: 'Confirme seu e-mail — Subsolo',
       html: `
