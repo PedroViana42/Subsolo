@@ -11,7 +11,7 @@ import { sendVerificationEmail } from '../lib/email.js';
 const router = Router();
 
 // Dummy hash usado para manter tempo constante quando usuário não existe (evita timing attack)
-const DUMMY_HASH = '$2a$12$invalidhashfortimingprotectionxxxxxxxxxxxxxxxxxxxxxxxxx';
+const DUMMY_HASH = '$2a$12$invalidhashfortimingprotectionxxxxxxxxxxxxxxxxxxxxxxxxx'; // nosemgrep: generic.secrets.security.detected-bcrypt-hash.detected-bcrypt-hash
 
 const registerSchema = z.object({
   email: z.string().email({ message: 'Email inválido' }),

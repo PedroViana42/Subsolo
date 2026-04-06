@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-subsolo}
     ports:
-      - "5434:5432" # Expõe na 5434 para não conflitar com outros bancos locais
+      - "127.0.0.1:5434:5432" # Expõe na 5434 para não conflitar com outros bancos locais
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-subsolo}"]
       interval: 5s
@@ -26,7 +26,7 @@ services:
     container_name: subsolo-backend-dev
     command: sh -c "cd backend && npx prisma db push && cd /app && npm run dev -w backend"
     ports:
-      - "3001:3001"
+      - "127.0.0.1:3001:3001"
     env_file:
       - .env
     volumes:
@@ -46,7 +46,7 @@ services:
     container_name: subsolo-frontend-dev
     command: npm run dev -w frontend
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     env_file:
       - .env
     volumes:

@@ -12,7 +12,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
 
   try {
     console.log(`[EMAIL DEBUG]: RESEND_API_KEY presente? ${!!process.env.RESEND_API_KEY}`);
-    console.log(`[EMAIL]: Tentando enviar via API (Resend) para ${email}...`);
+    console.log('[EMAIL]: Tentando enviar via API (Resend)...');
 
     if (!process.env.RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY não configurada no Render.");
@@ -38,9 +38,9 @@ export async function sendVerificationEmail(email: string, token: string): Promi
       throw new Error(error.message);
     }
 
-    console.log(`✅ [EMAIL]: Verificação enviada via API para ${email} (ID: ${data?.id})`);
+    console.log(`[EMAIL]: Verificação enviada via API (ID: ${data?.id})`);
   } catch (error: any) {
-    console.error(`🔥 [EMAIL API ERROR]: Falha ao enviar para ${email}:`, error);
+    console.error('[EMAIL API ERROR]: Falha ao enviar e-mail de verificação:', error?.message ?? error);
     throw new Error(`Falha no serviço de e-mail (API): ${error.message}`);
   }
 }
