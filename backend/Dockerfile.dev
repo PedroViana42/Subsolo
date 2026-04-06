@@ -6,8 +6,14 @@ WORKDIR /app
 COPY package*.json ./
 COPY backend/package*.json ./backend/
 
+# Copia o schema do Prisma antes do install para que o generate possa rodar
+COPY backend/prisma ./backend/prisma
+
 # Instala todas as dependências (incluindo devDependencies para o tsx watch)
 RUN npm install
+
+# Gera o Prisma Client dentro da imagem
+RUN cd backend && npx prisma generate
 
 # Copia o restante do código do backend
 COPY backend ./backend

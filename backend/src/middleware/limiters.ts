@@ -25,3 +25,10 @@ export const voteLimiter = rateLimit({
   max: 150,
   message: { error: 'Muitos votos computados. Descanse os dedos por alguns minutos.' },
 });
+
+// Limite de Comentários: 30 comentários a cada 10 minutos
+export const commentLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 30,
+  message: { error: 'Muitos comentários em pouco tempo. Aguarde 10 minutos.' },
+});

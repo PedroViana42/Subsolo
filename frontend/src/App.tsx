@@ -12,10 +12,10 @@ import { EmailVerifyScreen } from './components/EmailVerifyScreen';
 import { ReportModal } from './components/ReportModal';
 import { NewPostsPill } from './components/NewPostsPill';
 import { SearchInput } from './components/SearchInput';
-import { Post, UserIdentity, Comment, Tag, View } from './types';
+import { Post, UserIdentity, Tag, View } from './types';
 import { ALL_TAGS } from './constants/tags';
 import type { NickData } from './services/auth';
-import { getPosts, createPost, voteOnPost } from './services/posts';
+import { getPosts, createPost, voteOnPost, createComment } from './services/posts';
 
 type AuthState = 'login' | 'mask' | 'app' | 'verifying';
 
@@ -214,26 +214,14 @@ export default function App() {
   };
 
   const handleComment = async (postId: string, content: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-
-        const isOp = identity && post.authorNickname === identity.nickname;
-
-        const newComment: Comment = {
-          id: Math.random().toString(36).substring(2, 9),
-          content,
-          createdAt: new Date(),
-          authorNickname: identity?.nickname || 'Unknown',
-          honestyScore: identity?.honestyScore || '❓',
-          isOp: !!isOp,
-        };
-
-        return { ...post, comments: [...post.comments, newComment] };
-      })
-    );
+    const token = localStorage.getItem('subsolo_token');
+    if (!token) return;
+    try {
+      await createComment(token, postId, content);
+      await fetchPosts();
+    } catch (error: any) {
+      showToast(error.message || 'Erro ao comentar.', 'error');
+    }
   };
 
   const handleReport = (postId: string) => {

@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import prisma from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
-import { createPostLimiter, voteLimiter } from '../middleware/limiters.js';
+import { createPostLimiter, voteLimiter, commentLimiter } from '../middleware/limiters.js';
 import { sanitizeText } from '../lib/sanitize.js';
 
 const router = Router();
@@ -15,6 +15,10 @@ const createPostSchema = z.object({
 
 const voteSchema = z.object({
   isReal: z.boolean({ message: 'O tipo de voto (Fact ou Fic) é obrigatório.' }),
+});
+
+const createCommentSchema = z.object({
+  content: z.string().min(1, 'O comentário não pode estar vazio.').max(300, 'O comentário não pode ultrapassar 300 caracteres.'),
 });
 
 /**
@@ -99,6 +103,18 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
             name: true,
             aura: true,
             score: true,
+          },
+        },
+        comments: {
+          orderBy: { createdAt: 'asc' as const },
+          include: {
+            nick: {
+              select: {
+                name: true,
+                aura: true,
+                score: true,
+              },
+            },
           },
         },
       },
@@ -213,6 +229,72 @@ router.post('/:id/vote', requireAuth, voteLimiter, async (req: Request, res: Res
 
     console.error('[votePost error]:', error);
     res.status(500).json({ error: 'Erro interno ao computar voto.' });
+  }
+});
+
+/**
+ * @swagger
+ * /posts/{id}/comments:
+ *   post:
+ *     summary: Cria um comentário em uma confissão
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *             properties:
+ *               content:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Comentário criado com sucesso
+ */
+router.post('/:id/comments', requireAuth, commentLimiter, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const postId = req.params.id;
+    const parsed = createCommentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten().fieldErrors });
+      return;
+    }
+    const { content } = parsed.data;
+    const { nickId } = req.user!;
+
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+    if (!post) {
+      res.status(404).json({ error: 'Post não encontrado.' });
+      return;
+    }
+
+    const comment = await prisma.comment.create({
+      data: {
+        content: sanitizeText(content),
+        nickId,
+        postId,
+      },
+      include: {
+        nick: {
+          select: { name: true, aura: true, score: true },
+        },
+      },
+    });
+
+    res.status(201).json({ message: 'Comentário publicado!', comment });
+  } catch (error) {
+    console.error('[createComment error]:', error);
+    res.status(500).json({ error: 'Erro interno ao criar comentário.' });
   }
 });
 
