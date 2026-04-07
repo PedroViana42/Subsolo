@@ -17,7 +17,8 @@ RUN npx prisma generate
 RUN npm run build
 
 # Estágio 2: Runner
-FROM node:22-alpine AS runner # nosemgrep: use-distroless-base-image — node:alpine é necessário para shell+npx (entrypoint.sh)
+# nosemgrep: use-distroless-base-image — node:alpine é necessário para shell+npx (entrypoint.sh)
+FROM node:22-alpine AS runner
 
 # Definimos o diretório direto no backend para facilitar a vida do Node/Prisma
 WORKDIR /app/backend
