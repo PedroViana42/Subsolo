@@ -15,7 +15,7 @@ import { SearchInput } from './components/SearchInput';
 import { Post, UserIdentity, Tag, View } from './types';
 import { ALL_TAGS } from './constants/tags';
 import type { NickData } from './services/auth';
-import { getPosts, createPost, voteOnPost, createComment } from './services/posts';
+import { getPosts, createPost, voteOnPost, createComment, updatePost, deletePost } from './services/posts';
 
 type AuthState = 'login' | 'mask' | 'app' | 'verifying';
 
@@ -82,7 +82,9 @@ export default function App() {
     if (token) {
       if (posts.length === 0 && !silent) setIsLoading(true);
       try {
-        const data = await getPosts(token);
+        const nickRaw = localStorage.getItem('subsolo_nick');
+        const currentNickId = nickRaw ? (JSON.parse(nickRaw) as NickData).id : undefined;
+        const data = await getPosts(token, 1, currentNickId);
         
         if (posts.length === 0) {
           setPosts(data);
@@ -166,6 +168,8 @@ export default function App() {
     localStorage.removeItem('subsolo_token');
     localStorage.removeItem('subsolo_nick');
     setIdentity(null);
+    setPosts([]);
+    setBufferPosts([]);
     setAuthState('login');
   };
 
@@ -221,6 +225,32 @@ export default function App() {
       await fetchPosts();
     } catch (error: any) {
       showToast(error.message || 'Erro ao comentar.', 'error');
+    }
+  };
+
+  const handleEdit = async (postId: string, content: string, tag: string) => {
+    const token = localStorage.getItem('subsolo_token');
+    if (!token) return;
+    try {
+      await updatePost(token, postId, content, tag);
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, content } : p))
+      );
+      showToast('Confissão atualizada!', 'success');
+    } catch (error: any) {
+      showToast(error.message || 'Erro ao editar post.', 'error');
+    }
+  };
+
+  const handleDelete = async (postId: string) => {
+    const token = localStorage.getItem('subsolo_token');
+    if (!token) return;
+    try {
+      await deletePost(token, postId);
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      showToast('Confissão excluída.', 'success');
+    } catch (error: any) {
+      showToast(error.message || 'Erro ao excluir post.', 'error');
     }
   };
 
@@ -329,6 +359,8 @@ export default function App() {
               onVote={handleVote}
               onComment={handleComment}
               onReport={handleReport}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
             />
           </main>
 

@@ -11,9 +11,11 @@ interface FeedProps {
   onVote: (postId: string, vote: 'fact' | 'fic') => void;
   onComment: (postId: string, content: string) => Promise<void>;
   onReport: (postId: string) => void;
+  onEdit?: (postId: string, content: string, tag: string) => Promise<void>;
+  onDelete?: (postId: string) => Promise<void>;
 }
 
-export function Feed({ posts, identity, isLoading, currentView, onVote, onComment, onReport }: FeedProps) {
+export function Feed({ posts, identity, isLoading, currentView, onVote, onComment, onReport, onEdit, onDelete }: FeedProps) {
   const isHall = currentView === 'hall';
 
   if (isLoading && posts.length === 0) {
@@ -61,6 +63,8 @@ export function Feed({ posts, identity, isLoading, currentView, onVote, onCommen
               onVote={onVote}
               onComment={onComment}
               onReport={onReport}
+              onEdit={onEdit}
+              onDelete={onDelete}
             />
           </motion.div>
         ))}

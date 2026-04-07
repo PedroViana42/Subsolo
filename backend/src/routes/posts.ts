@@ -13,6 +13,11 @@ const createPostSchema = z.object({
   tag: z.string().optional(),
 });
 
+const updatePostSchema = z.object({
+  content: z.string().min(10, 'A confissão deve ter pelo menos 10 caracteres.').max(500, 'A confissão não pode ultrapassar 500 caracteres.'),
+  tag: z.string().optional(),
+});
+
 const voteSchema = z.object({
   isReal: z.boolean({ message: 'O tipo de voto (Fact ou Fic) é obrigatório.' }),
 });
@@ -295,6 +300,128 @@ router.post('/:id/comments', requireAuth, commentLimiter, async (req: Request, r
   } catch (error) {
     console.error('[createComment error]:', error);
     res.status(500).json({ error: 'Erro interno ao criar comentário.' });
+  }
+});
+
+/**
+ * @swagger
+ * /posts/{id}:
+ *   put:
+ *     summary: Edita o conteúdo de uma confissão
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *             properties:
+ *               content:
+ *                 type: string
+ *               tag:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Confissão atualizada com sucesso
+ *       400:
+ *         description: Dados inválidos
+ *       403:
+ *         description: Sem permissão para editar este post
+ *       404:
+ *         description: Post não encontrado
+ */
+router.put('/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const postId = req.params.id;
+    const { nickId } = req.user!;
+
+    const parsed = updatePostSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten().fieldErrors });
+      return;
+    }
+    const { content, tag } = parsed.data;
+
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+    if (!post) {
+      res.status(404).json({ error: 'Post não encontrado.' });
+      return;
+    }
+
+    if (post.nickId !== nickId) {
+      res.status(403).json({ error: 'Você não tem permissão para editar este post.' });
+      return;
+    }
+
+    const updatedPost = await prisma.post.update({
+      where: { id: postId },
+      data: {
+        content: sanitizeText(content),
+        tag: sanitizeText(tag),
+      },
+    });
+
+    res.json({ message: 'Confissão atualizada!', post: updatedPost });
+  } catch (error) {
+    console.error('[updatePost error]:', error);
+    res.status(500).json({ error: 'Erro interno ao atualizar post.' });
+  }
+});
+
+/**
+ * @swagger
+ * /posts/{id}:
+ *   delete:
+ *     summary: Exclui uma confissão
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Confissão excluída com sucesso
+ *       403:
+ *         description: Sem permissão para excluir este post
+ *       404:
+ *         description: Post não encontrado
+ */
+router.delete('/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const postId = req.params.id;
+    const { nickId } = req.user!;
+
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+    if (!post) {
+      res.status(404).json({ error: 'Post não encontrado.' });
+      return;
+    }
+
+    if (post.nickId !== nickId) {
+      res.status(403).json({ error: 'Você não tem permissão para excluir este post.' });
+      return;
+    }
+
+    await prisma.post.delete({ where: { id: postId } });
+
+    res.json({ message: 'Confissão excluída.' });
+  } catch (error) {
+    console.error('[deletePost error]:', error);
+    res.status(500).json({ error: 'Erro interno ao excluir post.' });
   }
 });
 

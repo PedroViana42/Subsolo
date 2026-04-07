@@ -1,6 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export interface NickData {
+  id: string;
   name: string;
   expiresAt: string;
   score: number;

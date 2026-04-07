@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flag, MessageCircle, CheckCircle2, XCircle, Send, Bot, Trophy } from 'lucide-react';
+import { Flag, MessageCircle, CheckCircle2, XCircle, Send, Bot, Trophy, Pencil, Trash2, X, Check } from 'lucide-react';
 import { Post, UserIdentity } from '../types';
 import { BadgeList } from './BadgeList';
 import { AuraWrapper } from './AuraWrapper';
@@ -13,6 +13,8 @@ interface PostCardProps {
   onVote: (postId: string, vote: 'fact' | 'fic') => void;
   onComment: (postId: string, content: string) => Promise<void>;
   onReport: (postId: string) => void;
+  onEdit?: (postId: string, content: string, tag: string) => Promise<void>;
+  onDelete?: (postId: string) => Promise<void>;
 }
 
 const formatTimeAgo = (date: Date) => {
@@ -36,14 +38,41 @@ const formatTimeAgo = (date: Date) => {
   return 'agora mesmo';
 };
 
-export function PostCard({ post, identity, isRelic, onVote, onComment, onReport }: PostCardProps) {
+export function PostCard({ post, identity, isRelic, onVote, onComment, onReport, onEdit, onDelete }: PostCardProps) {
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [commentContent, setCommentContent] = useState('');
   const [isCommenting, setIsCommenting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const totalVotes = post.factCount + post.ficCount;
   const factPercent = totalVotes === 0 ? 50 : Math.round((post.factCount / totalVotes) * 100);
   const ficPercent = totalVotes === 0 ? 50 : Math.round((post.ficCount / totalVotes) * 100);
+
+  const handleSaveEdit = async () => {
+    if (!onEdit || isSavingEdit) return;
+    setIsSavingEdit(true);
+    try {
+      await onEdit(post.id, editContent, post.tag);
+      setIsEditing(false);
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!onDelete || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await onDelete(post.id);
+    } finally {
+      setIsDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,18 +122,89 @@ export function PostCard({ post, identity, isRelic, onVote, onComment, onReport 
             </span>
           </div>
         </div>
-        <button
-          onClick={() => onReport(post.id)}
-          className="text-zinc-700 hover:text-rose-500 transition-all p-2 rounded-xl hover:bg-rose-500/10 border border-transparent hover:border-rose-900 active:scale-90"
-          title="Denunciar"
-        >
-          <Flag size={16} />
-        </button>
+        <div className="flex items-center gap-1">
+          {post.isOwner && onEdit && (
+            <button
+              onClick={() => { setIsEditing(true); setEditContent(post.content); setConfirmDelete(false); }}
+              className="text-zinc-700 hover:text-violet-400 transition-all p-2 rounded-xl hover:bg-violet-500/10 border border-transparent hover:border-violet-900 active:scale-90"
+              title="Editar"
+            >
+              <Pencil size={15} />
+            </button>
+          )}
+          {post.isOwner && onDelete && !confirmDelete && (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="text-zinc-700 hover:text-rose-500 transition-all p-2 rounded-xl hover:bg-rose-500/10 border border-transparent hover:border-rose-900 active:scale-90"
+              title="Excluir"
+            >
+              <Trash2 size={15} />
+            </button>
+          )}
+          {post.isOwner && onDelete && confirmDelete && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="text-rose-400 hover:text-rose-300 transition-all p-2 rounded-xl hover:bg-rose-500/10 border border-rose-900 active:scale-90 disabled:opacity-40"
+                title="Confirmar exclusão"
+              >
+                {isDeleting ? <div className="w-3.5 h-3.5 border-2 border-rose-400/20 border-t-rose-400 rounded-full animate-spin" /> : <Check size={15} strokeWidth={3} />}
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="text-zinc-600 hover:text-zinc-300 transition-all p-2 rounded-xl hover:bg-zinc-800 border border-transparent active:scale-90"
+                title="Cancelar"
+              >
+                <X size={15} strokeWidth={3} />
+              </button>
+            </div>
+          )}
+          {!post.isOwner && (
+            <button
+              onClick={() => onReport(post.id)}
+              className="text-zinc-700 hover:text-rose-500 transition-all p-2 rounded-xl hover:bg-rose-500/10 border border-transparent hover:border-rose-900 active:scale-90"
+              title="Denunciar"
+            >
+              <Flag size={16} />
+            </button>
+          )}
+        </div>
       </div>
-      
+
+      {isEditing ? (
+        <div className="mb-8">
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            className="w-full brute-input rounded-xl p-4 text-base resize-none min-h-[100px] mb-3"
+            maxLength={500}
+            autoFocus
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-zinc-600 font-mono">{editContent.length}/500</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="text-[11px] font-mono font-black uppercase tracking-widest px-4 py-2 rounded-xl border-2 border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isSavingEdit || editContent.trim().length < 10}
+                className="text-[11px] font-mono font-black uppercase tracking-widest px-4 py-2 rounded-xl border-2 border-violet-600 bg-violet-700 hover:bg-violet-600 text-white transition-all disabled:opacity-30 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+              >
+                {isSavingEdit ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
       <p className="text-zinc-100 text-base sm:text-lg leading-relaxed mb-8 whitespace-pre-wrap break-words font-sans font-medium selection:bg-violet-500/30">
         {post.content}
       </p>
+      )}
       
       {/* Fato ou Fic System */}
       <div className="mb-6 relative z-10">

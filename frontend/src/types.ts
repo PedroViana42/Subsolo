@@ -32,6 +32,7 @@ export interface Post {
   tag: Tag;
   authorBadges: string[];
   isBot?: boolean;
+  isOwner?: boolean;
 }
 
 export interface UserIdentity {

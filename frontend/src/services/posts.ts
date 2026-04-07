@@ -36,7 +36,7 @@ interface FetchPostsResponse {
   };
 }
 
-export async function getPosts(token: string, page = 1): Promise<Post[]> {
+export async function getPosts(token: string, page = 1, currentNickId?: string): Promise<Post[]> {
   const res = await fetch(`${API_URL}/posts?page=${page}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -48,7 +48,7 @@ export async function getPosts(token: string, page = 1): Promise<Post[]> {
   }
 
   const data: FetchPostsResponse = await res.json();
-  
+
   return data.posts.map((p) => ({
     id: p.id,
     content: p.content,
@@ -60,6 +60,7 @@ export async function getPosts(token: string, page = 1): Promise<Post[]> {
     factCount: p.factCount,
     ficCount: p.ficCount,
     userVote: null,
+    isOwner: currentNickId ? p.nickId === currentNickId : false,
     comments: p.comments.map((c) => ({
       id: c.id,
       content: c.content,
@@ -100,6 +101,36 @@ export async function createComment(token: string, postId: string, content: stri
   if (!res.ok) {
     const error = await res.json();
     throw new Error(error.error || 'Falha ao comentar');
+  }
+}
+
+export async function updatePost(token: string, postId: string, content: string, tag: string): Promise<void> {
+  const res = await fetch(`${API_URL}/posts/${postId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ content, tag }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Falha ao editar post');
+  }
+}
+
+export async function deletePost(token: string, postId: string): Promise<void> {
+  const res = await fetch(`${API_URL}/posts/${postId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Falha ao excluir post');
   }
 }
 
