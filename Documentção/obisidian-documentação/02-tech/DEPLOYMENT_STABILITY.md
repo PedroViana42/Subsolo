@@ -39,6 +39,26 @@ Este documento registra os desafios técnicos superados durante a migração par
 - **Remetente de Teste**: Usamos `onboarding@resend.dev` para validação imediata, com opção de configurar o domínio oficial no painel do Resend.
 - **Blindagem Antiqueda**: Mantivemos o `express-async-errors` para garantir que falhas externas não derrubem o servidor.
 
+## 🗑️ 7. Soft Delete e Purge Job de Posts
+
+**Decisão**: Posts deletados pelos usuários **não são apagados imediatamente** do banco.
+
+**Fluxo**:
+1. `DELETE /posts/:id` → preenche `deletedAt = now()` no registro (soft delete).
+2. O post some do feed imediatamente (todas as queries filtram `deletedAt: null`).
+3. O job `purgePosts` roda diariamente às `03:00` via `node-cron` e apaga permanentemente os posts com `deletedAt` mais antigo que `PURGE_AFTER_DAYS` dias.
+4. A deleção permanente remove em cascata: votos, comentários e reports do post.
+
+**Variável de ambiente**:
+```
+PURGE_AFTER_DAYS=30   # padrão: 30 dias
+```
+
+**Por que soft delete?**
+- Permite auditoria e moderação retroativa antes do apagamento definitivo.
+- Evita que um usuário delete conteúdo reportado antes da análise.
+- O período de retenção é configurável sem alterar código.
+
 ---
 
 ## 🏷️ Guia de Domínio Novo (Nexora Online)

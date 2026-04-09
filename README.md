@@ -60,7 +60,7 @@ Na primeira vez o `--build` é obrigatório. Nas próximas, basta `docker compos
 ### 3. Popule o catálogo de nicks (apenas na primeira vez)
 
 ```bash
-docker compose exec backend npm run prisma:seed
+docker compose exec -w /app/backend backend npm run prisma:seed
 ```
 
 ### Serviços disponíveis
@@ -89,7 +89,7 @@ docker compose logs -f backend
 docker compose exec db psql -U user -d subsolo
 
 # Rodar seed novamente (idempotente)
-docker compose exec backend npm run prisma:seed
+docker compose exec -w /app/backend backend npm run prisma:seed
 
 # Abrir Prisma Studio
 docker compose up prisma-studio

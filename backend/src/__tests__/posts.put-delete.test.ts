@@ -8,9 +8,8 @@ import jwt from 'jsonwebtoken';
 vi.mock('../lib/prisma.js', () => ({
   default: {
     post: {
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       update: vi.fn(),
-      delete: vi.fn(),
     },
   },
 }));
@@ -39,7 +38,7 @@ const mockPost = {
   factCount: 0,
   ficCount: 0,
   createdAt: new Date(),
-  updatedAt: new Date(),
+  deletedAt: null,
 };
 
 // --- Helpers ---
@@ -68,7 +67,7 @@ describe('PUT /posts/:id', () => {
 
   it('200 — dono edita o post com sucesso', async () => {
     const updatedContent = 'Conteúdo atualizado com sucesso agora.';
-    (prisma.post.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
+    (prisma.post.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
     (prisma.post.update as ReturnType<typeof vi.fn>).mockResolvedValue({ ...mockPost, content: updatedContent });
 
     const res = await request(app)
@@ -86,7 +85,7 @@ describe('PUT /posts/:id', () => {
   });
 
   it('200 — dono edita post com content e tag', async () => {
-    (prisma.post.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
+    (prisma.post.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
     (prisma.post.update as ReturnType<typeof vi.fn>).mockResolvedValue({
       ...mockPost,
       content: 'Novo conteúdo de edição aqui.',
@@ -110,7 +109,7 @@ describe('PUT /posts/:id', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error).toHaveProperty('content');
-    expect(prisma.post.findUnique).not.toHaveBeenCalled();
+    expect(prisma.post.findFirst).not.toHaveBeenCalled();
   });
 
   it('400 — content com mais de 500 caracteres', async () => {
@@ -121,7 +120,7 @@ describe('PUT /posts/:id', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error).toHaveProperty('content');
-    expect(prisma.post.findUnique).not.toHaveBeenCalled();
+    expect(prisma.post.findFirst).not.toHaveBeenCalled();
   });
 
   it('400 — body sem campo content', async () => {
@@ -131,7 +130,7 @@ describe('PUT /posts/:id', () => {
       .send({ tag: 'unica-tag' });
 
     expect(res.status).toBe(400);
-    expect(prisma.post.findUnique).not.toHaveBeenCalled();
+    expect(prisma.post.findFirst).not.toHaveBeenCalled();
   });
 
   it('401 — sem token de autenticação', async () => {
@@ -152,7 +151,7 @@ describe('PUT /posts/:id', () => {
   });
 
   it('403 — usuário não é dono do post', async () => {
-    (prisma.post.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
+    (prisma.post.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
 
     const res = await request(app)
       .put('/posts/post-abc-123')
@@ -165,7 +164,7 @@ describe('PUT /posts/:id', () => {
   });
 
   it('404 — post não encontrado', async () => {
-    (prisma.post.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (prisma.post.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
     const res = await request(app)
       .put('/posts/post-inexistente')
@@ -187,9 +186,9 @@ describe('DELETE /posts/:id', () => {
     vi.clearAllMocks();
   });
 
-  it('200 — dono exclui o post com sucesso', async () => {
-    (prisma.post.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
-    (prisma.post.delete as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
+  it('200 — dono exclui o post com sucesso (soft delete)', async () => {
+    (prisma.post.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
+    (prisma.post.update as ReturnType<typeof vi.fn>).mockResolvedValue({ ...mockPost, deletedAt: new Date() });
 
     const res = await request(app)
       .delete('/posts/post-abc-123')
@@ -197,14 +196,17 @@ describe('DELETE /posts/:id', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Confissão excluída.');
-    expect(prisma.post.delete).toHaveBeenCalledWith({ where: { id: 'post-abc-123' } });
+    expect(prisma.post.update).toHaveBeenCalledWith({
+      where: { id: 'post-abc-123' },
+      data: { deletedAt: expect.any(Date) },
+    });
   });
 
   it('401 — sem token de autenticação', async () => {
     const res = await request(app).delete('/posts/post-abc-123');
 
     expect(res.status).toBe(401);
-    expect(prisma.post.findUnique).not.toHaveBeenCalled();
+    expect(prisma.post.findFirst).not.toHaveBeenCalled();
   });
 
   it('401 — token inválido', async () => {
@@ -213,11 +215,11 @@ describe('DELETE /posts/:id', () => {
       .set('Authorization', 'Bearer token-completamente-invalido');
 
     expect(res.status).toBe(401);
-    expect(prisma.post.findUnique).not.toHaveBeenCalled();
+    expect(prisma.post.findFirst).not.toHaveBeenCalled();
   });
 
   it('403 — usuário não é dono do post', async () => {
-    (prisma.post.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
+    (prisma.post.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockPost);
 
     const res = await request(app)
       .delete('/posts/post-abc-123')
@@ -225,11 +227,11 @@ describe('DELETE /posts/:id', () => {
 
     expect(res.status).toBe(403);
     expect(res.body.error).toContain('permissão');
-    expect(prisma.post.delete).not.toHaveBeenCalled();
+    expect(prisma.post.update).not.toHaveBeenCalled();
   });
 
   it('404 — post não encontrado', async () => {
-    (prisma.post.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (prisma.post.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
     const res = await request(app)
       .delete('/posts/post-inexistente')
@@ -237,6 +239,6 @@ describe('DELETE /posts/:id', () => {
 
     expect(res.status).toBe(404);
     expect(res.body.error).toContain('não encontrado');
-    expect(prisma.post.delete).not.toHaveBeenCalled();
+    expect(prisma.post.update).not.toHaveBeenCalled();
   });
 });

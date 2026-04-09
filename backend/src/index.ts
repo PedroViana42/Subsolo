@@ -6,6 +6,8 @@ if (!process.env.JWT_SECRET) {
 }
 
 import app from './app.js';
+import cron from 'node-cron';
+import { purgeDeletedPosts } from './jobs/purgePosts.js';
 
 const port = process.env.PORT || 3001;
 
@@ -15,4 +17,16 @@ app.listen(Number(port), '0.0.0.0', () => {
   console.log(`   - E-mail: noreply@usenexora.online (via Resend)`);
   console.log(`   - Whitelist Ativa: ${(process.env.FRONTEND_URL ?? '') + ', localhost:3000, localhost:5173'}`);
   console.log(`   - Swagger UI: http://0.0.0.0:${port}/docs\n`);
+
+  // Roda todo dia às 03:00 para deletar permanentemente posts removidos há mais de PURGE_AFTER_DAYS dias
+  cron.schedule('0 3 * * *', async () => {
+    try {
+      const count = await purgeDeletedPosts();
+      if (count > 0) {
+        console.log(`[PurgeJob] ${count} post(s) deletado(s) permanentemente.`);
+      }
+    } catch (err) {
+      console.error('[PurgeJob] Erro ao purgar posts:', err);
+    }
+  });
 });

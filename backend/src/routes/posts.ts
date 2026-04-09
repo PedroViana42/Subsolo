@@ -101,6 +101,7 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
     const posts = await prisma.post.findMany({
       skip,
       take: limit,
+      where: { deletedAt: null },
       orderBy: { createdAt: 'desc' },
       include: {
         nick: {
@@ -125,7 +126,7 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
       },
     });
 
-    const total = await prisma.post.count();
+    const total = await prisma.post.count({ where: { deletedAt: null } });
 
     res.json({
       posts,
@@ -184,8 +185,8 @@ router.post('/:id/vote', requireAuth, voteLimiter, async (req: Request, res: Res
 
     // Executa as operações em uma transação para garantir integridade
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Verifica se o post existe
-      const post = await tx.post.findUnique({ where: { id: postId } });
+      // 1. Verifica se o post existe e não foi deletado
+      const post = await tx.post.findFirst({ where: { id: postId, deletedAt: null } });
       if (!post) {
         throw new Error('Post não encontrado.');
       }
@@ -277,7 +278,7 @@ router.post('/:id/comments', requireAuth, commentLimiter, async (req: Request, r
     const { content } = parsed.data;
     const { nickId } = req.user!;
 
-    const post = await prisma.post.findUnique({ where: { id: postId } });
+    const post = await prisma.post.findFirst({ where: { id: postId, deletedAt: null } });
     if (!post) {
       res.status(404).json({ error: 'Post não encontrado.' });
       return;
@@ -352,7 +353,7 @@ router.put('/:id', requireAuth, async (req: Request, res: Response): Promise<voi
     }
     const { content, tag } = parsed.data;
 
-    const post = await prisma.post.findUnique({ where: { id: postId } });
+    const post = await prisma.post.findFirst({ where: { id: postId, deletedAt: null } });
     if (!post) {
       res.status(404).json({ error: 'Post não encontrado.' });
       return;
@@ -405,7 +406,7 @@ router.delete('/:id', requireAuth, async (req: Request, res: Response): Promise<
     const postId = req.params.id;
     const { nickId } = req.user!;
 
-    const post = await prisma.post.findUnique({ where: { id: postId } });
+    const post = await prisma.post.findFirst({ where: { id: postId, deletedAt: null } });
     if (!post) {
       res.status(404).json({ error: 'Post não encontrado.' });
       return;
@@ -416,7 +417,7 @@ router.delete('/:id', requireAuth, async (req: Request, res: Response): Promise<
       return;
     }
 
-    await prisma.post.delete({ where: { id: postId } });
+    await prisma.post.update({ where: { id: postId }, data: { deletedAt: new Date() } });
 
     res.json({ message: 'Confissão excluída.' });
   } catch (error) {
